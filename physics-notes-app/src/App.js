@@ -11,6 +11,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import NavigationBar from './Components/NavigationBar/NavigationBar';
 
 import AccountCard from "./Components/AccountCard/AccountCard";
+import TopicTable from "./Components/TopicTable/TopicTable";
+
+// Importing React Bootstrap Components
+import Container from "react-bootstrap/esm/Container";
 
 /* // Importing Pages
 import SignIn from "./Pages/SignIn/SignIn";
@@ -84,7 +88,7 @@ export default class App extends React.Component {
         // Sign In route
         if (route === 'signin') {
             return(
-                <div style={{display: 'flex', justifyContent: 'center', paddingTop: '6rem'}}>
+                <div style={{display: 'flex', justifyContent: 'center', paddingTop: '2rem', alignContent: 'center'}}>
                     <AccountCard type='signin' changeRoute={this.changeRoute} loadUser={this.loadUser} />
                 </div>
             );
@@ -92,12 +96,23 @@ export default class App extends React.Component {
 
         // Index route
         else if (route === 'index') {
-
+            return(
+                <div>
+                    <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
+                    <Container>
+                        <TopicTable />
+                    </Container>
+                </div>
+            );
         }
 
         // Register route
         else if (route === 'register') {
-
+            return(
+                <div style={{display: 'flex', justifyContent: 'center', paddingTop: '2rem', alignContent: 'center'}}>
+                    <AccountCard type='register' changeRoute={this.changeRoute} loadUser={this.loadUser} />
+                </div>
+            );
         }
 
         // Notes route

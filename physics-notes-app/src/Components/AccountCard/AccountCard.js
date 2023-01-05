@@ -21,8 +21,16 @@ export default class AccountCard extends React.Component {
 
         // Creating the state
         this.state = {
+
+            // For both sign in and register
             inputEmail: '',
-            inputPassword: ''
+            inputPassword: '',
+
+            // Exclusively for register
+            inputFirstName: '',
+            inputLastName: '',
+            inputIntake: '',
+
         }
 
     }
@@ -31,9 +39,17 @@ export default class AccountCard extends React.Component {
     updateInputEmail = (event) => {
         return this.setState({ inputEmail: event.target.value });
     }
-
     updateInputPassword = (event) => {
         return this.setState({ inputPassword: event.target.value });
+    }
+    updateInputFirstName = (event) => {
+        return this.setState({ inputFirstName: event.target.value });
+    }
+    updateInputLastName = (event) => {
+        return this.setState({ inputLastName: event.target.value });
+    }
+    updateInputIntake = (event) => {
+        return this.setState({ inputIntake: event.target.value });
     }
 
     // Validating the user on form submit
@@ -56,8 +72,35 @@ export default class AccountCard extends React.Component {
         }
     }
 
+    // Registering the user on form submit
+    registerUser = (event) => {
+        // NOTE: SIMPLY PASSING INFO TO APP.JS FOR NOW
+
+        // Destructuring the state
+        const { inputEmail, inputPassword, inputFirstName, inputLastName, inputIntake } = this.state
+
+        // INSERT STUDENT INTO DATABASE HERE
+
+        // Loading the user into App's state
+        this.props.loadUser({
+            id: '1',
+            firstName: inputFirstName,
+            lastName: inputLastName,
+            schoolEmail: inputEmail,
+            role: 'student',
+            intake: inputIntake
+        })
+
+        // Changing route to index
+        return this.props.changeRoute('index');
+
+    }
+
     // Render Method for AccountCard
     render() {
+
+        // Grabbing current for register card
+        const currentDate = new Date()
 
         // Destructuring props for easier access
         const { type, changeRoute } = this.props;
@@ -75,7 +118,7 @@ export default class AccountCard extends React.Component {
                                 // Changing the Card title based off the route
                                 type === 'signin' ? 'Sign In' : 'Register'
                             }</h2>
-                            <p className=" mb-5">Please enter your email and password</p>
+                            <p style={{fontWeight: 'bold'}}>Please enter your {type === 'signin' ? 'Email and Password' : 'Login details'}</p>
                             <div className="mb-3">
                                 <Form>
                                 <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -92,21 +135,75 @@ export default class AccountCard extends React.Component {
                                     <Form.Label>Password</Form.Label>
                                     <Form.Control onChange={this.updateInputPassword} type="password" placeholder="Password" />
                                 </Form.Group>
+
+                                {
+                                    // For register card
+                                    type === 'register' &&
+                                    <div>
+                                        <p style={{fontWeight: 'bold'}}>Personal Details</p>
+
+                                        <Form.Group
+                                            className="mb-3"
+                                        >
+                                            <Form.Label>First Name</Form.Label>
+                                            <Form.Control onChange={this.updateInputFirstName} type="text" placeholder="Enter First Name" />
+                                        </Form.Group>
+
+                                        <Form.Group
+                                            className="mb-3"
+                                        >
+                                            <Form.Label>Last Name</Form.Label>
+                                            <Form.Control onChange={this.updateInputLastName} type="text" placeholder="Enter Last Name" />
+                                        </Form.Group>
+
+                                        <Form.Group
+                                            className="mb-3"
+                                        >
+                                            <Form.Label>Intake</Form.Label>
+                                            <Form.Control onChange={this.updateInputIntake} type="number" min={2016} max={currentDate.getFullYear()} placeholder="Enter Intake" />
+                                        </Form.Group>
+                                        
+                                    </div>
+
+                                }
+
                                 <div className="d-grid">
-                                    <Button onClick={this.validateUser} variant="primary" type="submit">
+                                    <Button onClick={
+                                        // Changing the function called depending on the type
+                                        type === 'signin'
+                                        ? this.validateUser
+                                        : this.registerUser
+                                    } variant="primary" type="submit">
                                     { type === 'signin' ? 'Sign In' : 'Register'}
                                     </Button>
                                 </div>
+                                {
+                                    // Adding other details if the user is logging in
+                                }
                                 </Form>
-                                <div className="mt-3">
-                                <p className="mb-0  text-center">
-                                    Don't have an account?{" "}
-                                    <a className="text-primary fw-bold"
-                                        onClick={() => changeRoute('register')}>
-                                        Register
-                                    </a>
-                                </p>
-                                </div>
+                                { 
+                                    // Adjusting the link based off of the current route
+                                    type==='signin' ? 
+                                    <div className="mt-3">
+                                    <p className="mb-0  text-center">
+                                        Don't have an account?{" "}
+                                        <a className="text-primary fw-bold"
+                                            onClick={() => changeRoute('register')}>
+                                            Register
+                                        </a>
+                                    </p>
+                                    </div> 
+                                    :
+                                    <div className="mt-3">
+                                    <p className="mb-0  text-center">
+                                        Already have an account?{" "}
+                                        <a className="text-primary fw-bold"
+                                            onClick={() => changeRoute('signin')}>
+                                            Sign In
+                                        </a>
+                                    </p>
+                                    </div> 
+                                }
                             </div>
                             </div>
                         </Card.Body>

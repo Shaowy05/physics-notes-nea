@@ -16,7 +16,7 @@ export default class NavigationBar extends React.Component {
     render() {
 
         // Destructuring Props for easier access
-        const { signedIn } = this.props;
+        const { signedIn, changeRoute } = this.props;
 
         // Returning the Navigation Bar Component
         return(
@@ -30,26 +30,26 @@ export default class NavigationBar extends React.Component {
                         <Navbar.Brand>Physics Notes</Navbar.Brand>
                         <Navbar.Toggle aria-controls="basic-navbar-nav" />
                         <Navbar.Collapse id="basic-navbar-nav">
-                            <Nav className="me-auto">
-                                { 
-                                // If the user is Signed In then...
-                                signedIn === true
-                                    // Display the regular Navigation Bar
-                                    ? <div style={{display: 'flex'}}>
+                            {
+                                // If the user is signed in display regular Navigation Bar
+                                signedIn === true ?
+                                    <Nav className="me-auto">
                                         <Nav.Link>Index</Nav.Link>
                                         <Nav.Link>Messaging</Nav.Link>
+                                        <Nav.Link>Forums</Nav.Link>
                                         <Nav.Link className="justify-content-end">
                                             <span class="material-symbols-outlined">
                                                 account_circle
                                             </span>
                                         </Nav.Link>
-                                    </div>
-                                    // Else display the altered Navigation Bar
-                                    : <div style={{display: 'flex'}}>
-                                        <Nav.Link>Sign In</Nav.Link>
-                                    </div>
-                                }
-                            </Nav>
+                                    </Nav>
+                                // Else display the alternative Navigation Bar
+                                :
+                                    <Nav className="me-auto">
+                                        <Nav.Link onClick={() => changeRoute('signin')}>Sign In</Nav.Link>
+                                    </Nav>
+
+                            }
                         </Navbar.Collapse>
                     </Container>
                 </Navbar>
