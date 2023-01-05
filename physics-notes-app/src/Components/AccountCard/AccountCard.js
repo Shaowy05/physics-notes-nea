@@ -15,17 +15,58 @@ import Container from 'react-bootstrap/Container';
 // The Account Card Component - A form for letting the user sign in and also register
 export default class AccountCard extends React.Component {
 
+    // Creating a state to hold the user input
+    constructor(props) {
+        super(props);
+
+        // Creating the state
+        this.state = {
+            inputEmail: '',
+            inputPassword: ''
+        }
+
+    }
+
+    // Methods to update the state during user input
+    updateInputEmail = (event) => {
+        return this.setState({ inputEmail: event.target.value });
+    }
+
+    updateInputPassword = (event) => {
+        return this.setState({ inputPassword: event.target.value });
+    }
+
+    // Validating the user on form submit
+    validateUser = (event) => {
+        //NOTE: USING 'john@hotmail.com' AND 'pass' AS TEMPLATE INFO
+        if (this.state.inputEmail === 'kl.jdoe@ecclesbourne.derbyshire.sch.uk' && this.state.inputPassword === '91389') {
+            this.props.loadUser({
+                id: '1',
+                firstName: 'John',
+                lastName: 'Doe',
+                schoolEmail: 'kl.jdoe@ecclesbourne.derbyshire.sch.uk',
+                role: 'student',
+                intake: '2016'
+            })
+            return this.props.changeRoute('index');
+        }
+        else {
+            console.log('Incorrect Credentials');
+            return null
+        }
+    }
+
     // Render Method for AccountCard
     render() {
 
         // Destructuring props for easier access
-        const { type, updateEmail, updatePassword } = this.props;
+        const { type, changeRoute } = this.props;
 
         // Returning the Account Card
         return (
             <div className="AccountCard">
                 <Container>
-                    <Row className="vh-100 d-flex justify-content-center">
+                    <Row className="vh-90 d-flex justify-content-center">
                     <Col md={8} lg={6} xs={12}>
                         <Card className="shadow">
                         <Card.Body>
@@ -41,7 +82,7 @@ export default class AccountCard extends React.Component {
                                     <Form.Label className="text-center">
                                     Email address
                                     </Form.Label>
-                                    <Form.Control onChange={updateEmail} type="email" placeholder="Enter email" />
+                                    <Form.Control onChange={this.updateInputEmail} type="email" placeholder="Enter email" />
                                 </Form.Group>
 
                                 <Form.Group
@@ -49,28 +90,19 @@ export default class AccountCard extends React.Component {
                                     controlId="formBasicPassword"
                                 >
                                     <Form.Label>Password</Form.Label>
-                                    <Form.Control onChange={updatePassword} type="password" placeholder="Password" />
-                                </Form.Group>
-                                <Form.Group
-                                    className="mb-3"
-                                    controlId="formBasicCheckbox"
-                                >
-                                    <p className="small">
-                                    <a className="text-primary" href="#!">
-                                        Forgot password?
-                                    </a>
-                                    </p>
+                                    <Form.Control onChange={this.updateInputPassword} type="password" placeholder="Password" />
                                 </Form.Group>
                                 <div className="d-grid">
-                                    <Button variant="primary" type="submit">
-                                    Login
+                                    <Button onClick={this.validateUser} variant="primary" type="submit">
+                                    { type === 'signin' ? 'Sign In' : 'Register'}
                                     </Button>
                                 </div>
                                 </Form>
                                 <div className="mt-3">
                                 <p className="mb-0  text-center">
                                     Don't have an account?{" "}
-                                    <a className="text-primary fw-bold">
+                                    <a className="text-primary fw-bold"
+                                        onClick={() => changeRoute('register')}>
                                         Register
                                     </a>
                                 </p>

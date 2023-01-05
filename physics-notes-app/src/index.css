@@ -12,8 +12,6 @@ code {
     monospace;
 }
 
-.page {
-  height: 95vh;
-  display: flex;
-  justify-content: center;
+a, button {
+  cursor: pointer;
 }
