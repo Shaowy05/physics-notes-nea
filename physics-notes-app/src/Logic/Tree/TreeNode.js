@@ -4,9 +4,9 @@
 export default class TreeNode {
 
     // Constructor for TreeNode
-    constructor(data, children) {
+    constructor(data) {
         this.data = data;
-        this.children = children;
+        this.children = [];
     }
 
     // Getters

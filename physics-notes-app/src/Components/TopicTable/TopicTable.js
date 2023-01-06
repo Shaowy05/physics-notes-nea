@@ -5,178 +5,176 @@ import Table from "react-bootstrap/Table";
 import Accordion from "react-bootstrap/Accordion";
 
 // Importing the TreeNode class from logic
-import TreeNode from "../../Logic/TreeNode";
+import TreeNode from "../../Logic/Tree/TreeNode";
+import Tree from "../../Logic/Tree/Tree";
 
 export default class TopicTable extends React.Component {
 
-    mockDirectory = {
-        sections: [
-            {
-                number: 1,
-                title: "Particles and Radiation",
-                topics: [
-                    {
-                        number: 1,
-                        title: "Matter and Radiation",
-                    },
-                    {
-                        number: 2,
-                        title: "Quarks and Leptons",
-                    }
-                ]
-            },
-            {
-                number: 2,
-                title: "Waves and Optics",
-                topics: [
-                    {
-                        number: 4,
-                        title: "Waves"
-                    }
-                ]
-            }
-        ]
-    };
+    mockSections = [
+        {
+            sectionId: 0,
+            sectionNumber: 1,
+            sectionTitle: "Particles and Radiation"
+        },
+        {
+            sectionId: 1,
+            sectionNumber: 2,
+            sectionTitle: "Waves and Optics"
+        },
+        {
+            sectionId: 2,
+            sectionNumber: 3,
+            sectionTitle: "Mechanics and Materials"
+        }
+    ]
+
+    mockTopics = [
+        {
+            topicId: 0,
+            topicNumber: 1,
+            topicTitle: "Matter and Radiation",
+            sectionId: 0
+        },
+        {
+            topicId: 1,
+            topicNumber: 2,
+            topicTitle: "Quarks and Leptons",
+            sectionId: 0
+        },
+        {
+            topicId: 2,
+            topicNumber: 3,
+            topicTitle: "Quark Phenomena",
+            sectionId: 0
+        },
+        {
+            topicId: 3,
+            topicNumber: 4,
+            topicTitle: "Waves",
+            sectionId: 1
+        },
+        {
+            topicId: 4,
+            topicNumber: 5,
+            topicTitle: "Optics",
+            sectionId: 1
+        }
+    ]
 
     mockSubtopics = [
         {
-            sectionnumber: 1,
-            subtopicnumber: "1.1",
-            subtopictitle: "Inside the Atom",
-            notes: 0,
-            questions: 0
+            subtopicId: 0,
+            subtopicCode: 1.1,
+            subtopicTitle: "Inside the Atom",
+            topicId: 0
         },
         {
-            sectionnumber: 1,
-            subtopicnumber: "1.2",
-            subtopictitle: "Stable and Unstable Nuclei",
-            notes: 0,
-            questions: 0
+            subtopicId: 1,
+            subtopicCode: 1.2,
+            subtopicTitle: "Stable and Unstable Nuclei",
+            topicId: 0
         },
         {
-            sectionnumber: 1,
-            subtopicnumber: "1.3",
-            subtopictitle: "Photons",
-            notes: 0,
-            questions: 0
+            subtopicId: 2,
+            subtopicCode: 1.3,
+            subtopicTitle: "Photons",
+            topicId: 0
         },
         {
-            sectionnumber: 1,
-            subtopicnumber: "1.4",
-            subtopictitle: "Particles and Antiparticles",
-            notes: 0,
-            questions: 0
+            subtopicId: 3,
+            subtopicCode: 1.4,
+            subtopicTitle: "Particles and Antiparticles",
+            topicId: 0
         },
         {
-            sectionnumber: 1,
-            subtopicnumber: "1.5",
-            subtopictitle: "Particle Interactions",
-            notes: 0,
-            questions: 0
+            subtopicId: 4,
+            subtopicCode: 1.5,
+            subtopicTitle: "Particle Interactions",
+            topicId: 0
         },
         {
-            sectionnumber: 2,
-            subtopicnumber: "4.1",
-            subtopictitle: "Waves and Vibrations",
-            notes: 0,
-            questions: 0
+            subtopicId: 5,
+            subtopicCode: 2.1,
+            subtopicTitle: "The Particle Zoo",
+            topicId: 1
         },
         {
-            sectionnumber: 2,
-            subtopicnumber: "4.2",
-            subtopictitle: "Measuring Waves",
-            notes: 0,
-            questions: 0
+            subtopicId: 1,
+            subtopicCode: 2.2,
+            subtopicTitle: "Particle Sorting",
+            topicId: 1
         },
         {
-            sectionnumber: 2,
-            subtopicnumber: "4.3",
-            subtopictitle: "Wave Properties 2",
-            notes: 0,
-            questions: 0
+            subtopicId: 1,
+            subtopicCode: 2.3,
+            subtopicTitle: "Leptons at Work",
+            topicId: 1
         },
-        {
-            sectionnumber: 2,
-            subtopicnumber: "4.4",
-            subtopictitle: "Wave Properties 1",
-            notes: 0,
-            questions: 0
-        },
-        {
-            sectionnumber: 2,
-            subtopicnumber: "4.5",
-            subtopictitle: "Stationary and Progressive Waves",
-            notes: 0,
-            questions: 0
-        },
-        {
-            sectionnumber: 2,
-            subtopicnumber: "4.6",
-            subtopictitle: "More about Stationary Waves on Strings",
-            notes: 0,
-            questions: 0
-        },
-        {
-            sectionnumber: 2,
-            subtopicnumber: "4.7",
-            subtopictitle: "Using an Oscilloscope",
-            notes: 0,
-            questions: 0
-        }
     ]
 
     constructor() {
         super();
         this.state = {
-            root: new TreeNode(0, [])
+/*             rootNode: new TreeNode(0, []),
+            sectionNodes: [],
+            topicNodes: [],
+            subtopicNodes: [] */
+
+            topicDirectory: new Tree(new TreeNode({
+                id: 0,
+                number: 0,
+                title: "~/"
+            }, []))
         }
+    }
+
+    // Methods to populate the tree
+    createTree(sections, topics, subtopics) {
     }
 
     // After the table is rendered
-    componentDidMount() {
-    // Destructuring state
-    const { root } = this.state
+/*     componentDidMount() {
+        // Destructuring state
+        const { rootNode } = this.state
 
-    // Populating tree
-    this.mockDirectory.sections.forEach(section => {
+        // Populating tree
+        this.mockDirectory.sections.forEach(section => {
 
-        // Each node has data which is an object with the
-        // number and title of the given section/topic            
-        let sectionData = {
-            number: section.number,
-            title: section.title
-        }
-
-        // Populating the children array with the topics
-        let sectionChildren = section.topics.forEach(topic => {
-
-            let topicData = {
-                number: topic.number,
-                title: topic.title
+            // Each node has data which is an object with the
+            // number and title of the given section/topic            
+            let sectionData = {
+                number: section.number,
+                title: section.title
             }
 
-            let topicNode = new TreeNode(topicData, []);
+            // Populating the children array with the topics
+            let sectionChildren = section.topics.forEach(topic => {
 
-            return topicNode;
+                let topicData = {
+                    number: topic.number,
+                    title: topic.title
+                }
+
+                let topicNode = new TreeNode(topicData, []);
+
+                return topicNode;
+
+            })
+
+            // Create a temporary node
+            let sectionNode = new TreeNode(sectionData, sectionChildren);
+
+            // Add the section to the root node
+            root.addChild(sectionNode);
 
         })
 
-        // Create a temporary node
-        let sectionNode = new TreeNode(sectionData, sectionChildren);
+        console.log(root);
 
-        // Add the section to the root node
-        root.addChild(sectionNode);
-
-    })
-
-    console.log(root);
-
-    }
+    } */
 
     // Render method for TopicTable
     render() {
-
-        
 
         // Returning Topic Table
         return (
