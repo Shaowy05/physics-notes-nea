@@ -8,7 +8,7 @@ export default class FilterTable extends React.Component {
     render() {
         return (
             <div>
-                <Table >
+                <Table>
                 </Table>
             </div>
         );

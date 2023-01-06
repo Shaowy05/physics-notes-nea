@@ -1,0 +1,136 @@
+{
+    "sections": [
+        {
+            "sectionnumber": 1,
+            "sectiontitle": "Particles and Radiation",
+            "topics": [
+                {
+                    "topicnumber": 1,
+                    "topictitle": "Matter and Radiation",
+                    "subtopics": [
+                        {
+                            "subtopicnumber": "1.1",
+                            "subtopictitle": "Inside the Atom",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "1.2",
+                            "subtopictitle": "Stable and Unstable Nuclei",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "1.3",
+                            "subtopictitle": "Photons",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "1.4",
+                            "subtopictitle": "Particles and Antiparticles",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "1.5",
+                            "subtopictitle": "Particle Interactions",
+                            "notes": 0,
+                            "questions": 0
+                        }
+                    ]
+                },
+                {
+                    "topicnumber": 2,
+                    "topictitle": "Quarks and Leptons",
+                    "subtopics": [
+                        {
+                            "subtopicnumber": "2.1",
+                            "subtopictitle": "The Particle Zoo",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "2.2",
+                            "subtopictitle": "Particle Sorting",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "2.3",
+                            "subtopictitle": "Leptons at Work",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "2.4",
+                            "subtopictitle": "Quarks and Antiquarks",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "2.5",
+                            "subtopictitle": "Conservation Rules",
+                            "notes": 0,
+                            "questions": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "sectionnumber": 2,
+            "sectiontitle": "Waves and Optics",
+            "topics": [
+                {
+                    "topicnumber": 4,
+                    "topictitle": "Waves",
+                    "subtopics": [
+                        {
+                            "subtopicnumber": "4.1",
+                            "subtopictitle": "Waves and Vibrations",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "4.2",
+                            "subtopictitle": "Measuring Waves",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "4.3",
+                            "subtopictitle": "Wave Properties 2",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "4.4",
+                            "subtopictitle": "Wave Properties 1",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "4.5",
+                            "subtopictitle": "Stationary and Progressive Waves",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "4.6",
+                            "subtopictitle": "More about Stationary Waves on Strings",
+                            "notes": 0,
+                            "questions": 0
+                        },
+                        {
+                            "subtopicnumber": "4.7",
+                            "subtopictitle": "Using an Oscilloscope",
+                            "notes": 0,
+                            "questions": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
