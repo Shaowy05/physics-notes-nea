@@ -123,7 +123,7 @@ export default class TopicTable extends React.Component {
             topicDirectory: new Tree(new TreeNode({
                 id: 0,
                 number: 0,
-                title: "~/"
+                title: "~"
             }, []))
         }
     }

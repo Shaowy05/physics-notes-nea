@@ -16,6 +16,9 @@ import TopicTable from "./Components/TopicTable/TopicTable";
 // Importing React Bootstrap Components
 import Container from "react-bootstrap/esm/Container";
 
+import Tree from "./Logic/Tree/Tree";
+import TreeNode from "./Logic/Tree/TreeNode";
+
 /* // Importing Pages
 import SignIn from "./Pages/SignIn/SignIn";
 import Index from './Pages/Index/Index';
@@ -65,18 +68,40 @@ export default class App extends React.Component {
     }
 
     // changeRoute handles the event where a user clicks a link
-    changeRoute = (route) => {
+    changeRoute = route => {
         // Setting state.route to the passed route
         return this.setState({ route: route });
     }
 
     // loadUser method lets the signin and register routes load user
-    loadUser = (user) => {
+    loadUser = user => {
         return this.setState({ signedIn: true, user: user }, () => console.log(this.state));
     }
     
     // Render method for App
     render() {
+
+        const tree = new Tree()
+
+        const node1 = new TreeNode({
+            id: 1,
+            number: 3,
+            title: "Test"
+        }, [])
+
+        const node2 = new TreeNode({
+            id: 1,
+            number: 3,
+            title: "Test"
+        }, [])
+
+        const rootNode = new TreeNode({
+            id: 1,
+            number:5,
+            title: "Root"
+        }, [node1, node2])
+
+        console.log(node1 === node2);
 
         // Destructuring the state into variables for easier
         // access
