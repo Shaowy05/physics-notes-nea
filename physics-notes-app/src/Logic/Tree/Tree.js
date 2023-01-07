@@ -2,25 +2,6 @@
 import Stack from "../Stack";
 import CircularQueue from "../CircularQueue";
 
-class Path {
-
-    constructor() {
-        this.pathString = '';
-    }
-
-    addToPath(data) {
-
-        const { id, number, title } = data;
-        this.pathString = this.pathString.concat(`/${title}`)
-
-    }
-
-    getPathString() {
-        return this.pathString;
-    }
-
-}
-
 // Class for Tree
 export default class Tree {
 
@@ -35,20 +16,50 @@ export default class Tree {
         
     }
 
-    breadthFirstSearch = (node, maxNodeCount) => {
+    breadthFirstSearch = (searchKey, maxNodeCount) => {
 
         // Creating a Queue
         const queue = new CircularQueue(maxNodeCount);
 
-        // Adding the Root Node to the Queue
+        // Creating an array of nodes that haven't been visited,
+        // initially all of them, stored by TreeNode key
+        const visited = [];
+
+        // Adding the Root Node to the Queue and labelling as explored
+        visited[this.rootNode.key] = true;
         queue.enQueue(this.rootNode);
 
+        // An array containing the path to the node
+        //let path = [];
+
         // Loop while the queue is not empty
-        while (!queue.isEmpty) {
+        while (!queue.isEmpty()) {
 
+            // Dequeue the first item
+            let node = queue.deQueue();
+
+            if (node.key === searchKey) {
+                return (
+                    // path: path,
+                    node
+                )
+            } else {
+                node.children.forEach(childNode => {
+                    if (visited[childNode.key] !== null) {
+                        visited[childNode.key] = true;
+                        // path.push(childNode.key);
+                        queue.enQueue(childNode);
+                    }
+                });
+            }
             
-
         }
+
+        // Return false if node not found
+        return (
+            false
+             // path: path
+        );
 
     }
 

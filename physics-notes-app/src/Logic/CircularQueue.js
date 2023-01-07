@@ -13,6 +13,8 @@ export default class CircularQueue {
     isFull = () => (((this.rear + 1) % this.maxLength) === this.front) ? true : false 
     isEmpty = () => (this.front === -1) ? true : false
 
+    getFrontOfQueue = () => this.front === -1 ? false : this.items[this.front];
+
     enQueue = item => {
 
         // First check if the queue is full

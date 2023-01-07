@@ -81,28 +81,6 @@ export default class App extends React.Component {
     // Render method for App
     render() {
 
-        const tree = new Tree()
-
-        const node1 = new TreeNode({
-            id: 1,
-            number: 3,
-            title: "Test"
-        }, [])
-
-        const node2 = new TreeNode({
-            id: 1,
-            number: 3,
-            title: "Test"
-        }, [])
-
-        const rootNode = new TreeNode({
-            id: 1,
-            number:5,
-            title: "Root"
-        }, [node1, node2])
-
-        console.log(node1 === node2);
-
         // Destructuring the state into variables for easier
         // access
         const { route, signedIn, user } = this.state;

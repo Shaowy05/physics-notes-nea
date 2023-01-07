@@ -4,12 +4,15 @@
 export default class TreeNode {
 
     // Constructor for TreeNode
-    constructor(data) {
+    constructor(key, data) {
+        // A unique identifier for each node, that allows for comparisons
+        this.key = key;
         this.data = data;
         this.children = [];
     }
 
     // Getters
+    getKey = () => this.key;
     getData = () => this.data;
     getChildren = () => this.children;
 
