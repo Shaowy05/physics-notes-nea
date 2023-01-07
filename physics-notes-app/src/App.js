@@ -81,6 +81,40 @@ export default class App extends React.Component {
     // Render method for App
     render() {
 
+/*         const root = new TreeNode(0, {
+            id: 0,
+            number: 0,
+            title: "Root"
+        }, []);
+        const node1 = new TreeNode(1, {
+            id: 1,
+            number: 69,
+            title: "1"
+        }, []);
+        const node2 = new TreeNode(2, {
+            id: 1,
+            number: 45,
+            title: "2"
+        }, []);
+        const node3 = new TreeNode(3, {
+            id: 3,
+            number: 9,
+            title: "3"
+        }, []);
+        const node4 = new TreeNode(4, {
+            id: 6,
+            number: 6,
+            title: "4"
+        }, []);
+
+        const tree = new Tree(root, 7);
+        root.addChild(node1);
+        root.addChild(node2);
+        node1.addChild(node3);
+        node3.addChild(node4);
+
+        console.log(tree.breadthFirstSearch(node4) === node4); */
+
         // Destructuring the state into variables for easier
         // access
         const { route, signedIn, user } = this.state;

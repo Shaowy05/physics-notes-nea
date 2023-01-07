@@ -16,10 +16,10 @@ export default class Tree {
         
     }
 
-    breadthFirstSearch = (searchKey, maxNodeCount) => {
+    breadthFirstSearch = (searchNode) => {
 
         // Creating a Queue
-        const queue = new CircularQueue(maxNodeCount);
+        const queue = new CircularQueue(this.maxNodeCount);
 
         // Creating an array of nodes that haven't been visited,
         // initially all of them, stored by TreeNode key
@@ -38,7 +38,7 @@ export default class Tree {
             // Dequeue the first item
             let node = queue.deQueue();
 
-            if (node.key === searchKey) {
+            if (node === searchNode) {
                 return (
                     // path: path,
                     node
