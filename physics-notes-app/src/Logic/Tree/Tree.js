@@ -11,15 +11,20 @@ export default class Tree {
         this.maxNodeCount = maxNodeCount;
     }
 
+    // Getter for the root node
+    getRootNode = () => this.rootNode;
+
     // Various Tree Traversal Methods
     depthFirstSearch = node => {
         
     }
 
-    breadthFirstSearch = (searchNode) => {
+    breadthFirstTraversal = (searchNode = null) => {
 
         // Creating a Queue
         const queue = new CircularQueue(this.maxNodeCount);
+
+        const nodeArray = [];
 
         // Creating an array of nodes that haven't been visited,
         // initially all of them, stored by TreeNode key
@@ -37,12 +42,11 @@ export default class Tree {
 
             // Dequeue the first item
             let node = queue.deQueue();
+            nodeArray.push(node);
 
-            if (node === searchNode) {
-                return (
-                    // path: path,
-                    node
-                )
+            // If the user is searching
+            if (searchNode === node) {
+                return node
             } else {
                 node.children.forEach(childNode => {
                     if (visited[childNode.key] !== null) {
@@ -55,11 +59,13 @@ export default class Tree {
             
         }
 
-        // Return false if node not found
-        return (
-            false
-             // path: path
-        );
+        // If the user was searching
+        if (searchNode !== null) {
+            return false
+        // Otherwise
+        } else {
+            return nodeArray
+        }
 
     }
 

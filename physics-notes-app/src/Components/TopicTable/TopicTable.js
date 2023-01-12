@@ -115,63 +115,56 @@ export default class TopicTable extends React.Component {
     constructor() {
         super();
         this.state = {
-/*             rootNode: new TreeNode(0, []),
-            sectionNodes: [],
-            topicNodes: [],
-            subtopicNodes: [] */
-
-            topicDirectory: new Tree(new TreeNode({
+            topicDirectoryTree: new Tree(new TreeNode(0, {
                 id: 0,
                 number: 0,
                 title: "~"
-            }, []))
+            }, 'root'))
         }
     }
 
-    // Methods to populate the tree
-    createTree(sections, topics, subtopics) {
+    // After the table is rendered
+    componentDidMount() {
+        this.populateTree()
     }
 
-    // After the table is rendered
-/*     componentDidMount() {
-        // Destructuring state
-        const { rootNode } = this.state
+    // PopulateLayer will take in 1 of sections, topics or subtopics
+    // and add all of them to the tree.
+    populateTree() {
 
-        // Populating tree
-        this.mockDirectory.sections.forEach(section => {
+        // Key Counter stores the key for each node
+        let keyCounter = 1;
+        const rootNode = this.state.topicDirectoryTree.getRootNode()
 
-            // Each node has data which is an object with the
-            // number and title of the given section/topic            
-            let sectionData = {
-                number: section.number,
-                title: section.title
-            }
+        // Grabbing the sections from the database
+        fetch('http://localhost:3000/topicdirectory/sections')
+            // After the response is received convert json to object 
+            .then(response => response.json())
+            // Then iterate through object and add to tree
+            .then(sections => {
+                sections.forEach(section => {
+                    // Getting the root node and adding the sections
+                    rootNode.addChild(new TreeNode(keyCounter, {
+                            sectionId: section.section_id,
+                            sectionNumber: section.section_number,
+                            sectionTitle: section.section_title
+                        }))
 
-            // Populating the children array with the topics
-            let sectionChildren = section.topics.forEach(topic => {
+                    // Increment the keyCounter
+                    keyCounter++;
+                });
+            });
 
-                let topicData = {
-                    number: topic.number,
-                    title: topic.title
-                }
+            // Grabbing the topics from the database
+            fetch('http://localhost:3000/topicdirectory/topics')
+                .then(response => response.json())
+                .then(topics => {
+                    topics.forEach(topic => {
+                        // Find the section that the topic belongs to
+                    })
+                })
 
-                let topicNode = new TreeNode(topicData, []);
-
-                return topicNode;
-
-            })
-
-            // Create a temporary node
-            let sectionNode = new TreeNode(sectionData, sectionChildren);
-
-            // Add the section to the root node
-            root.addChild(sectionNode);
-
-        })
-
-        console.log(root);
-
-    } */
+    }    
 
     // Render method for TopicTable
     render() {

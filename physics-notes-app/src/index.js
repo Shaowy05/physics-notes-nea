@@ -16,7 +16,5 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 // Using .render to finally display the App upon execution
 root.render(
-    <React.StrictMode>
-        <App />
-    </React.StrictMode>
+    <App />
 );

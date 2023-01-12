@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "API for Physics Notes React App",
   "type": "module",
-  "main": "index.js",
+  "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,15 @@
   "bugs": {
     "url": "https://github.com/Shaowy05/physics-notes-nea/issues"
   },
-  "homepage": "https://github.com/Shaowy05/physics-notes-nea#readme"
+  "homepage": "https://github.com/Shaowy05/physics-notes-nea#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "knex": "^2.4.0",
+    "pg": "^8.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
 }

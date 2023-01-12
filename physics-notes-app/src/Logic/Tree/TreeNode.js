@@ -4,9 +4,11 @@
 export default class TreeNode {
 
     // Constructor for TreeNode
-    constructor(key, data) {
-        // A unique identifier for each node, that allows for comparisons
-        this.key = key;
+    constructor(key, data, type) {
+        // Unique identifier for each node
+        this.key = key
+        // Root, Section, Topic or Subtopic
+        this.type = type
         this.data = data;
         this.children = [];
     }
