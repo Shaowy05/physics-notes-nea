@@ -38,7 +38,7 @@ export default class NavigationBar extends React.Component {
                                         <Nav.Link>Messaging</Nav.Link>
                                         <Nav.Link>Forums</Nav.Link>
                                         <Nav.Link className="justify-content-end">
-                                            <span class="material-symbols-outlined">
+                                            <span className="material-symbols-outlined">
                                                 account_circle
                                             </span>
                                         </Nav.Link>

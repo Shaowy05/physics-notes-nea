@@ -3,7 +3,7 @@ export default class CircularQueue {
 
     constructor(maxLength) {
         this.maxLength = maxLength;
-        this.items = [];
+        this.items = new Array(maxLength).fill(undefined);
         this.front = -1;
         this.rear = -1;
     }
@@ -41,13 +41,14 @@ export default class CircularQueue {
         // Then if there is only one element
         } else if (this.front === this.rear) {
             const temp = this.items[this.front];
+            this.items[this.front] = undefined;
             this.front = -1;
             this.rear = -1;
-            this.items.splice(0, 1);
             return temp;
         // Finally if the queue is regular
         } else {
             const temp = this.items[this.front];
+            this.items[this.front] = undefined;
             this.front = (this.front + 1) % this.maxLength;
             return temp;
         }

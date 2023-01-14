@@ -7,6 +7,7 @@ import Accordion from "react-bootstrap/Accordion";
 // Importing the TreeNode class from logic
 import TreeNode from "../../Logic/Tree/TreeNode";
 import Tree from "../../Logic/Tree/Tree";
+import Folder from "../../Logic/Folder";
 
 export default class TopicTable extends React.Component {
 
@@ -115,56 +116,123 @@ export default class TopicTable extends React.Component {
     constructor() {
         super();
         this.state = {
-            topicDirectoryTree: new Tree(new TreeNode(0, {
-                id: 0,
-                number: 0,
-                title: "~"
-            }, 'root'))
+            // Folder array stores each folder at the index
+            // specified by its key in the tree
+            folderArray: [],
+            // The tree for structuring the folders. Max node
+            // initially set to 1.
+            folderDirectoryTree: new Tree(new TreeNode(0), 50)
         }
     }
 
     // After the table is rendered
     componentDidMount() {
-        this.populateTree()
+
+        const { folderArray, folderDirectoryTree } = this.state;
+
+        // Adding the root node to folder array
+        folderArray[0] = new Folder(0, 0, '~', 'root', 0);
+
+        // Counter to give unique values. Initially 1, as 0
+        let keyCounter = 1;
+
+        fetch('http://localhost:3000/folders/sections', {
+            method: 'post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                parent_id: 0
+            })
+        })
+        .then(response => response.json())
+        .then(sections => sections.forEach(section => {
+            // Adding the section to the folder array
+            folderArray[keyCounter] = new Folder(
+                section.section_id,
+                section.section_number,
+                section.section_title,
+                'section',
+                keyCounter
+            )
+
+            // Adding its respective node to the tree
+            folderDirectoryTree.getRootNode().addChild(new TreeNode(keyCounter));
+
+            // Increment keyCounter
+            keyCounter++;
+        })).then(() => {
+            folderArray.forEach(folder => {
+                if (folder.type === 'section') {
+                    fetch('http://localhost:3000/folders/topics', {
+                        method: 'post',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            parent_id: folder.id
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(topics => {
+                        topics.forEach(topic => {
+                            // Create the folder for the topic
+                            folderArray[keyCounter] = new Folder(
+                                topic.topic_id,
+                                topic.topic_number,
+                                topic.topic_title,
+                                'topic',
+                                keyCounter
+                            )
+
+                            // Find the node with the parent folder
+                            const parentFolderNode = folderDirectoryTree.breadthFirstTraversal(folder.key);
+                            // If the node is found then add a new node for the
+                            // folder
+                            if (parentFolderNode !== false) {
+                                parentFolderNode.addChild(new TreeNode(keyCounter));
+                            }
+
+                            keyCounter++;
+                        })
+                });
+            }
+        });
+    }).then(console.log(folderDirectoryTree.breadthFirstTraversal()));
+
+        /* // Repeat for topics and subtopics
+        fetch('http://localhost:3000/folders/topics', {
+
+        })
+            .then(response => response.json())
+            .then(topics => topics.forEach(topic => {
+                // Adding the topic to the folder array
+                folderArray[keyCounter] = new Folder(
+                    topic.topic_id,
+                    topic.topic_number,
+                    topic.topic_title,
+                    keyCounter
+                )
+                // Increment keyCounter
+                keyCounter++;
+            }));
+
+        
+        fetch('http://localhost:3000/folders/subtopics')
+            .then(response => response.json())
+            .then(subtopics => subtopics.forEach(subtopic => {
+                // Adding the subtopic to the folder array
+                folderArray[keyCounter] = new Folder(
+                    subtopic.subtopic_id,
+                    subtopic.subtopic_number,
+                    subtopic.subtopic_title,
+                    keyCounter
+                )
+                // Increment keyCounter
+                keyCounter++;
+            })).then(console.log(this.state.folderArray)); */
+
+        
+
     }
 
-    // PopulateLayer will take in 1 of sections, topics or subtopics
-    // and add all of them to the tree.
-    populateTree() {
-
-        // Key Counter stores the key for each node
-        let keyCounter = 1;
-        const rootNode = this.state.topicDirectoryTree.getRootNode()
-
-        // Grabbing the sections from the database
-        fetch('http://localhost:3000/topicdirectory/sections')
-            // After the response is received convert json to object 
-            .then(response => response.json())
-            // Then iterate through object and add to tree
-            .then(sections => {
-                sections.forEach(section => {
-                    // Getting the root node and adding the sections
-                    rootNode.addChild(new TreeNode(keyCounter, {
-                            sectionId: section.section_id,
-                            sectionNumber: section.section_number,
-                            sectionTitle: section.section_title
-                        }))
-
-                    // Increment the keyCounter
-                    keyCounter++;
-                });
-            });
-
-            // Grabbing the topics from the database
-            fetch('http://localhost:3000/topicdirectory/topics')
-                .then(response => response.json())
-                .then(topics => {
-                    topics.forEach(topic => {
-                        // Find the section that the topic belongs to
-                    })
-                })
-
-    }    
+    // Gets all of the topics and stores it in the state
 
     // Render method for TopicTable
     render() {

@@ -35,23 +35,39 @@ app.use(express.json());
 
 // Route - /topicdirectory
 // GET Requests
-app.get('/topicdirectory/:tablename', (req, res) => {
+app.post('/folders/:tablename', (req, res) => {
     
-    // Destructuring the request parameters
+    // Destructuring the request 
     const { tablename } = req.params;
-    console.log({tablename});
+    const { parent_id } = req.body;
+
+    let parentFieldName = null;
+
+    switch (tablename) {
+        case 'sections':
+            parentFieldName = 'root_id';
+            break;
+        case 'topics':
+            parentFieldName = 'section_id';
+            break;
+        case 'subtopics':
+            parentFieldName = 'topic_id';
+            break;
+        default:
+            res.status(400).json('Invalid table name');
+    }
 
     // SELECT * FROM tableName
-    db.select('*').from({tablename})
+    db.select('*').from({tablename}).where(parentFieldName, '=', parent_id)
         // Returns a Promise, after receiving info...
         .then(data => res.json(data))
         // Return an error message if unable to send response
         .catch(err => res.status(400).json('Unable to retrieve data'))
 
-})
+});
 
 
 // Finally telling the app to listen on port 3000
 app.listen(3000, () => {
     console.log('App is listening on port 3000');
-})
+});

@@ -8,6 +8,7 @@ export default class Tree {
     // Constructor for Tree
     constructor(rootNode, maxNodeCount) {
         this.rootNode = rootNode;
+        // Maximum number of nodes in the tree. Needed for queue.
         this.maxNodeCount = maxNodeCount;
     }
 
@@ -19,7 +20,9 @@ export default class Tree {
         
     }
 
-    breadthFirstTraversal = (searchNode = null) => {
+    // A Breadth First Traversal of the Tree. searchKey is an optional
+    // parameter that can be specified if a specific node is needed.
+    breadthFirstTraversal = (searchKey = null) => {
 
         // Creating a Queue
         const queue = new CircularQueue(this.maxNodeCount);
@@ -27,44 +30,44 @@ export default class Tree {
         const nodeArray = [];
 
         // Creating an array of nodes that haven't been visited,
-        // initially all of them, stored by TreeNode key
-        const visited = [];
+        // initially all of them, stored by TreeNode key to keep
+        // constant lookup times.
+        const visited = new Array(this.maxNodeCount).fill(false);
 
         // Adding the Root Node to the Queue and labelling as explored
         visited[this.rootNode.key] = true;
         queue.enQueue(this.rootNode);
 
-        // An array containing the path to the node
-        //let path = [];
-
         // Loop while the queue is not empty
         while (!queue.isEmpty()) {
+    
+            if (searchKey === null) {
+                console.log(visited);
+            }
 
             // Dequeue the first item
             let node = queue.deQueue();
             nodeArray.push(node);
 
             // If the user is searching
-            if (searchNode === node) {
+            if (searchKey !== null && searchKey === node.key) {
                 return node
             } else {
-                node.children.forEach(childNode => {
-                    if (visited[childNode.key] !== null) {
+                node.getChildren().forEach(childNode => {
+                    if (!visited[childNode.key]) {
                         visited[childNode.key] = true;
-                        // path.push(childNode.key);
                         queue.enQueue(childNode);
                     }
                 });
             }
-            
         }
 
         // If the user was searching
-        if (searchNode !== null) {
-            return false
+        if (searchKey !== null) {
+            return false;
         // Otherwise
         } else {
-            return nodeArray
+            return nodeArray;
         }
 
     }
