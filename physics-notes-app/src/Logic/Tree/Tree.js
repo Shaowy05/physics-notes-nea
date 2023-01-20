@@ -27,39 +27,36 @@ export default class Tree {
         // Creating a Queue
         const queue = new CircularQueue(this.maxNodeCount);
 
-        const nodeArray = [];
+        const nodeArray = new Array();
 
         // Creating an array of nodes that haven't been visited,
         // initially all of them, stored by TreeNode key to keep
         // constant lookup times.
-        const visited = new Array(this.maxNodeCount).fill(false);
+        //const visited = new Array(this.maxNodeCount).fill(false);
 
         // Adding the Root Node to the Queue and labelling as explored
-        visited[this.rootNode.key] = true;
+        //visited[this.rootNode.key] = true;
         queue.enQueue(this.rootNode);
 
         // Loop while the queue is not empty
         while (!queue.isEmpty()) {
-    
-            if (searchKey === null) {
-                console.log(visited);
-            }
-
             // Dequeue the first item
-            let node = queue.deQueue();
+            const node = queue.deQueue();
             nodeArray.push(node);
 
             // If the user is searching
-            if (searchKey !== null && searchKey === node.key) {
+            if (searchKey !== null && searchKey === node.getKey()) {
                 return node
             } else {
                 node.getChildren().forEach(childNode => {
-                    if (!visited[childNode.key]) {
+                    /* if (!visited[childNode.key]) {
                         visited[childNode.key] = true;
                         queue.enQueue(childNode);
-                    }
+                    } */
+                    queue.enQueue(childNode);
                 });
             }
+
         }
 
         // If the user was searching

@@ -12,7 +12,6 @@ export default class TreeNode {
 
     // Getters
     getKey = () => this.key;
-    getData = () => this.data;
     getChildren = () => this.children;
 
     // Method to add node to children

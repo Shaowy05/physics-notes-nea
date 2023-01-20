@@ -8,6 +8,7 @@ import Accordion from "react-bootstrap/Accordion";
 import TreeNode from "../../Logic/Tree/TreeNode";
 import Tree from "../../Logic/Tree/Tree";
 import Folder from "../../Logic/Folder";
+import CircularQueue from "../../Logic/CircularQueue";
 
 export default class TopicTable extends React.Component {
 
@@ -159,7 +160,8 @@ export default class TopicTable extends React.Component {
 
             // Increment keyCounter
             keyCounter++;
-        })).then(() => {
+        }))
+        .then(() => {
             folderArray.forEach(folder => {
                 if (folder.type === 'section') {
                     fetch('http://localhost:3000/folders/topics', {
@@ -191,10 +193,12 @@ export default class TopicTable extends React.Component {
 
                             keyCounter++;
                         })
-                });
-            }
-        });
-    }).then(console.log(folderDirectoryTree.breadthFirstTraversal()));
+                    });
+                }
+            });
+        })
+        .then(() => console.log(folderDirectoryTree.getRootNode()))
+        .then(() => console.log(folderDirectoryTree.breadthFirstTraversal()));
 
         /* // Repeat for topics and subtopics
         fetch('http://localhost:3000/folders/topics', {
