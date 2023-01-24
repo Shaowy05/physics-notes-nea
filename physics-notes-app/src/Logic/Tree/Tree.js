@@ -42,6 +42,9 @@ export default class Tree {
         while (!queue.isEmpty()) {
             // Dequeue the first item
             const node = queue.deQueue();
+            if (searchKey === 25) {
+                console.log(node.getChildren())
+            }
             nodeArray.push(node);
 
             // If the user is searching

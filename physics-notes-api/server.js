@@ -35,7 +35,7 @@ app.use(express.json());
 
 // Route - /topicdirectory
 // GET Requests
-app.post('/folders/:tablename', (req, res) => {
+app.get('/folders/:tablename', (req, res) => {
     
     // Destructuring the request 
     const { tablename } = req.params;
@@ -58,7 +58,7 @@ app.post('/folders/:tablename', (req, res) => {
     }
 
     // SELECT * FROM tableName
-    db.select('*').from({tablename}).where(parentFieldName, '=', parent_id)
+    db.select('*').from({tablename})
         // Returns a Promise, after receiving info...
         .then(data => res.json(data))
         // Return an error message if unable to send response
