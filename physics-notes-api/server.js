@@ -33,32 +33,12 @@ app.use(express.json());
 
 // Splitting the different requests by route:
 
-// Route - /topicdirectory
+// Route - /folders
 // GET Requests
-app.get('/folders/:tablename', (req, res) => {
+app.get('/folders', (req, res) => {
     
-    // Destructuring the request 
-    const { tablename } = req.params;
-    const { parent_id } = req.body;
-
-    let parentFieldName = null;
-
-    switch (tablename) {
-        case 'sections':
-            parentFieldName = 'root_id';
-            break;
-        case 'topics':
-            parentFieldName = 'section_id';
-            break;
-        case 'subtopics':
-            parentFieldName = 'topic_id';
-            break;
-        default:
-            res.status(400).json('Invalid table name');
-    }
-
     // SELECT * FROM tableName
-    db.select('*').from({tablename})
+    db.select('*').from('folders')
         // Returns a Promise, after receiving info...
         .then(data => res.json(data))
         // Return an error message if unable to send response

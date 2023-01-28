@@ -3,13 +3,13 @@
 export default class Folder {
 
     // Constructor
-    constructor(id, number, title, type, key) {
+    constructor(id, number, title, hasNotes, parentId, type) {
         this.id = id;
         this.number = number;
         this.title = title;
-        this.type = type
-        // Same as the key on the tree
-        this.key = key;
+        this.hasNotes = hasNotes;
+        this.parentId = parentId;
+        this.type = type;
     }
 
 }
