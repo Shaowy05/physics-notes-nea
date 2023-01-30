@@ -9,6 +9,7 @@ export default class Stack {
     top = () => this.items[this.items.lastIndexOf];
     push = (item) => this.items.push(item);
     pop = () => this.items.pop();
+    getItems = () => this.items;
 
     isEmpty = () => this.items.length === 0 ? true : false; 
 
