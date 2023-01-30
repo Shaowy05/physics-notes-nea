@@ -1,4 +1,5 @@
 import React from "react";
+import './TopicTable.css';
 
 // Importing React Bootstrap Components
 import Table from "react-bootstrap/Table";
@@ -11,6 +12,7 @@ import Stack from "../../Logic/Stack";
 
 // Importing React Components
 import FolderPath from "../FolderPath/FolderPath";
+import FolderRow from "../FolderRow/FolderRow";
 
 export default class TopicTable extends React.Component {
 
@@ -76,7 +78,7 @@ export default class TopicTable extends React.Component {
 
     }
 
-    returnToParentFolder = () =>{
+    goToParentFolder = () => {
         this.setState(state => {
             const tempStack = state.folderPathStack;
             tempStack.pop();
@@ -86,41 +88,92 @@ export default class TopicTable extends React.Component {
         })
     }
 
+    goToSelectedFolder = folder => {
+        this.setState(state => {
+            const tempStack = state.folderPathStack;
+            tempStack.push(folder);
+            return {
+                folderPathStack: tempStack
+            }
+        })
+    }
+
 
     // Render method for TopicTable
     render() {
 
         const { folderArray, folderDirectoryTree, folderPathStack } = this.state;
 
-        // Returning Topic Table
-        return (
-            <div>
-                <Table striped bordered hover responsive='md'>
-                    <thead>
-                        <tr>
-                            <th colSpan={4}>
-                                <FolderPath folderPathStack={folderPathStack} />
-                            </th>
-                        </tr>
-                    </thead>
-                    <thead>
-                        <tr>
-                            <th>Number</th>
-                            <th>Title</th>
-                            <th>Notes</th>
-                            <th>type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            folderPathStack.top() === folderArray[0] ??
-                            <tr colSpan={4} onClick={this.returnToParentFolder}>
-                                <td>Return</td>
+        const currentFolder = folderPathStack.top();
+        const currentTreeNode = folderDirectoryTree.breadthFirstTraversal(currentFolder.id);
+        //const currentFolderChildren = currentTreeNode.getChildren();
+        const currentFolderChildren = folderArray.filter(folder => {
+            let isChildOfCurrentFolder = false;
+
+            // Looping through all the child nodes of the current node
+            currentTreeNode.getChildren().forEach(childNode => {
+                if (childNode.key === folder.id) {
+                    isChildOfCurrentFolder = true;
+                }
+            })
+
+            return isChildOfCurrentFolder;
+
+        })
+
+        // If the folders hav not been fetched then don't render the table and show a
+        // page indicating that the folders are being fetched.
+        if (folderArray.length === 0) {
+            return(
+                <div className={'centralise'}>
+                    <h1>Getting the Notes...</h1>
+                    <div className={'loader'}></div>
+                </div>
+            );
+        }
+
+        // Otherwise display the regular index page
+        else {
+            return (
+                <div>
+                    <Table striped bordered hover responsive='md'>
+                        <thead>
+                            <tr>
+                                <th colSpan={4}>
+                                    <FolderPath folderPathStack={folderPathStack} />
+                                </th>
                             </tr>
-                        }
-                    </tbody>
-                </Table>
-            </div>
-        );
+                        </thead>
+                        <thead>
+                            <tr>
+                                <th>Number</th>
+                                <th>Title</th>
+                                <th>Notes</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                currentFolder !== folderArray[0] &&
+                                <tr onClick={this.goToParentFolder}>
+                                    <td colSpan={4}>Return</td>
+                                </tr>
+                            }
+                            {
+                                currentFolderChildren.map((childFolder, i) => {
+                                    return (
+                                        <FolderRow
+                                            key={i}
+                                            folder={childFolder}
+                                            goToSelectedFolder={this.goToSelectedFolder}
+                                        />
+                                    );
+                                })
+                            }
+                        </tbody>
+                    </Table>
+                </div>
+            );
+        }
     }
 }

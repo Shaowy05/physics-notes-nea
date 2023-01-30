@@ -6,7 +6,7 @@ export default class Stack {
     }
 
     // Stack methods
-    top = () => this.items[this.items.lastIndexOf];
+    top = () => this.items[this.items.length - 1];
     push = (item) => this.items.push(item);
     pop = () => this.items.pop();
     getItems = () => this.items;
