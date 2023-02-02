@@ -1,5 +1,7 @@
 import React from "react";
 
+import './FolderRow.css';
+
 // A singular row in the TopicTable Component. Will take in a folder
 // as a prop.
 export default class FolderRow extends React.Component {

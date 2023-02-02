@@ -13,6 +13,7 @@ import Stack from "../../Logic/Stack";
 // Importing React Components
 import FolderPath from "../FolderPath/FolderPath";
 import FolderRow from "../FolderRow/FolderRow";
+import FilterCard from "../FilterCard/FilterCard";
 
 export default class TopicTable extends React.Component {
 
@@ -98,28 +99,33 @@ export default class TopicTable extends React.Component {
         })
     }
 
+    filterFolders = (folders, filters = null) => {
+        
+        // If no filters are passed in then filter normally, i.e select
+        // the folders belonging to the current folder's child
+        if (filters === null) {
+            const currentFolder = this.state.folderPathStack.top();
+            const currentTreeNode = this.state.folderDirectoryTree.breadthFirstTraversal(currentFolder.id);
+            const filteredFolders = folders.filter(folder => {
+                let isChildOfCurrentFolder = false;
+                currentTreeNode.getChildren().forEach(childNode => {
+                    if (childNode.key === folder.id) {
+                        isChildOfCurrentFolder = true;
+                    }
+                })
+                return isChildOfCurrentFolder;
+            })
+            return filteredFolders;
+        }
+
+    }
 
     // Render method for TopicTable
     render() {
 
         const { folderArray, folderDirectoryTree, folderPathStack } = this.state;
 
-        const currentFolder = folderPathStack.top();
-        const currentTreeNode = folderDirectoryTree.breadthFirstTraversal(currentFolder.id);
-        //const currentFolderChildren = currentTreeNode.getChildren();
-        const currentFolderChildren = folderArray.filter(folder => {
-            let isChildOfCurrentFolder = false;
-
-            // Looping through all the child nodes of the current node
-            currentTreeNode.getChildren().forEach(childNode => {
-                if (childNode.key === folder.id) {
-                    isChildOfCurrentFolder = true;
-                }
-            })
-
-            return isChildOfCurrentFolder;
-
-        })
+        const filteredFolders = this.filterFolders(folderArray);
 
         // If the folders hav not been fetched then don't render the table and show a
         // page indicating that the folders are being fetched.
@@ -136,6 +142,7 @@ export default class TopicTable extends React.Component {
         else {
             return (
                 <div>
+                    <FilterCard />
                     <Table striped bordered hover responsive='md'>
                         <thead>
                             <tr>
@@ -154,13 +161,15 @@ export default class TopicTable extends React.Component {
                         </thead>
                         <tbody>
                             {
-                                currentFolder !== folderArray[0] &&
-                                <tr onClick={this.goToParentFolder}>
+                                this.state.folderPathStack.top() !== folderArray[0] &&
+                                <tr onClick={this.goToParentFolder}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <td colSpan={4}>Return</td>
                                 </tr>
                             }
                             {
-                                currentFolderChildren.map((childFolder, i) => {
+                                filteredFolders.map((childFolder, i) => {
                                     return (
                                         <FolderRow
                                             key={i}
