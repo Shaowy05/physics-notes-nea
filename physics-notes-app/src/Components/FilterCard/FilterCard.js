@@ -3,6 +3,8 @@ import './FilterCard.css';
 
 import Card from 'react-bootstrap/Card';
 import Collapse from 'react-bootstrap/Collapse';
+import InputGroup from 'react-bootstrap/InputGroup';
+import Form from 'react-bootstrap/Form';
 
 export default class FilterCard extends React.Component {
 
@@ -11,12 +13,6 @@ export default class FilterCard extends React.Component {
 
         this.state = {
             open: false,
-
-            standardSearchText: '',
-            authorSearchText: '',
-
-            orderBy: ''
-
         }
 
     }
@@ -24,6 +20,7 @@ export default class FilterCard extends React.Component {
     render() {
 
         const { open } = this.state;
+        const { updateSearch, updateHideSections, updateHideEmptyFolders } = this.props;
 
         return(
             <div>
@@ -41,9 +38,22 @@ export default class FilterCard extends React.Component {
                         <p id="filter-card-header-text">Filters</p>
                         </Card.Header>
                     <Collapse in={open}>
-                        <Card.Text>
-                            Filter text
-                        </Card.Text>
+                        <div id="filters">
+                            <InputGroup size={'sm'} className={'mb-3'}>
+                                <InputGroup.Text>Search</InputGroup.Text> 
+                                <Form.Control onChange={updateSearch} />
+                            </InputGroup>
+                            <Form.Check
+                                type={'checkbox'} 
+                                label={'Hide Sections'}
+                                onChange={updateHideSections}
+                            />
+                            <Form.Check 
+                                type={'checkbox'}
+                                label={'Hide Empty Folders'}
+                                onChange={updateHideEmptyFolders}
+                            />
+                        </div>
                     </Collapse>
                 </Card>
             </div>
