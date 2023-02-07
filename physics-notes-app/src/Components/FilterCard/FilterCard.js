@@ -20,7 +20,12 @@ export default class FilterCard extends React.Component {
     render() {
 
         const { open } = this.state;
-        const { updateSearch, updateHideSections, updateHideEmptyFolders } = this.props;
+        const { updateSearch, updateHideSections, updateHideEmptyFolders, updateOrderByOption } = this.props;
+
+        // The different ways to order the folders, stored in an array.
+        // This allows for us to use the .map function to more efficiently
+        // display the radio checkboxes.
+        const orderByOptions = ["Number", "Title", "Posts", "Difficulty", "Answers"];
 
         return(
             <div>
@@ -38,21 +43,39 @@ export default class FilterCard extends React.Component {
                         <p id="filter-card-header-text">Filters</p>
                         </Card.Header>
                     <Collapse in={open}>
-                        <div id="filters">
-                            <InputGroup size={'sm'} className={'mb-3'}>
-                                <InputGroup.Text>Search</InputGroup.Text> 
-                                <Form.Control onChange={updateSearch} />
-                            </InputGroup>
-                            <Form.Check
-                                type={'checkbox'} 
-                                label={'Hide Sections'}
-                                onChange={updateHideSections}
-                            />
-                            <Form.Check 
-                                type={'checkbox'}
-                                label={'Hide Empty Folders'}
-                                onChange={updateHideEmptyFolders}
-                            />
+                        <div id="collapsible">
+                            <div id="filters">
+                                <InputGroup size={'sm'} className={'mb-3'}>
+                                    <InputGroup.Text>Search</InputGroup.Text> 
+                                    <Form.Control onChange={updateSearch} />
+                                </InputGroup>
+                                <Form.Check
+                                    type={'checkbox'} 
+                                    label={'Hide Sections'}
+                                    onChange={updateHideSections}
+                                />
+                                <Form.Check 
+                                    type={'checkbox'}
+                                    label={'Hide Empty Folders'}
+                                    onChange={updateHideEmptyFolders}
+                                />
+                                <Form.Text>Order By:</Form.Text>
+                                <div id={'order-by-options'}>
+                                {
+                                    orderByOptions.map((orderByOption, i) => (
+                                        <Form.Check
+                                            key={i}
+                                            inline
+                                            label={orderByOption}
+                                            type={'radio'}
+                                            name={'orderByOptions'}
+                                            id={`${orderByOption}`}
+                                            onChange={updateOrderByOption}
+                                        />
+                                    ))
+                                }
+                                </div>
+                            </div>
                         </div>
                     </Collapse>
                 </Card>

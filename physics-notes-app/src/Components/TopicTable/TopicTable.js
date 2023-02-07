@@ -9,6 +9,7 @@ import TreeNode from "../../Logic/Tree/TreeNode";
 import Tree from "../../Logic/Tree/Tree";
 import Folder from "../../Logic/Folder";
 import Stack from "../../Logic/Stack";
+import FolderArray from "../../Logic/FolderArray";
 
 // Importing React Components
 import FolderPath from "../FolderPath/FolderPath";
@@ -25,14 +26,16 @@ export default class TopicTable extends React.Component {
         initialPathStack.push(rootFolder);
         
         this.state = {
-            folderArray: [rootFolder],
+            folderArray: new FolderArray([rootFolder]),
             folderDirectoryTree: new Tree(new TreeNode(0)),
             folderPathStack: initialPathStack,
 
             searchBarText: '',
 
             hideSections: false,
-            hideEmptyFolders: false
+            hideEmptyFolders: false,
+
+            orderByOption: ''
 
         };
 
@@ -60,10 +63,10 @@ export default class TopicTable extends React.Component {
             })
             .then(folders => {
                 const fDT = this.createFolderTree(folders);
-                const fA = this.state.folderArray.concat(folders);
+                const fA = this.state.folderArray.folders.concat(folders);
 
                 this.setState({
-                    folderArray: fA,
+                    folderArray: new FolderArray(fA),
                     folderDirectoryTree: fDT
                 });
 
@@ -111,9 +114,25 @@ export default class TopicTable extends React.Component {
 
     updateHideEmptyFolders = event => this.setState({ hideEmptyFolders: event.target.checked });
 
-    filterFolders = folders => {
+    updateOrderByOption = event => this.setState({ orderByOption: event.target.id })
 
-        const { searchBarText, hideSections, hideEmptyFolders } = this.state;
+    // orderFolders will order the folders based off of the orderByOption property
+    // in the state.
+    orderFolders = folders => {
+
+        const { orderByOption } = this.state;
+
+        // Here we use a switch statement to decide what to do depending on
+        // the orderByOption in the state
+        switch (orderByOption) {
+            case 'Number':
+        }
+
+    }
+
+    /* filterFolders = folders => {
+
+        const { searchBarText, hideSections, hideEmptyFolders, orderByOption } = this.state;
         let filteredFolders;
         
         const currentFolder = this.state.folderPathStack.top();
@@ -152,16 +171,18 @@ export default class TopicTable extends React.Component {
             filteredFolders = filteredFolders.filter(folder => folder.title.toLowerCase().includes(searchBarText.toLowerCase()));
         }
 
+        filteredFolders = (orderByOption !== '') ? this.orderFolders(filteredFolders) : filteredFolders; 
+
         return filteredFolders;
 
-    }
+    } */
 
     // Render method for TopicTable
     render() {
 
         const { folderArray, folderDirectoryTree, folderPathStack } = this.state;
 
-        const filteredFolders = this.filterFolders(folderArray);
+        const filteredFolders = folderArray.getFilteredFolders(this.state);
 
         // If the folders hav not been fetched then don't render the table and show a
         // page indicating that the folders are being fetched.
@@ -182,6 +203,7 @@ export default class TopicTable extends React.Component {
                         updateSearch = {this.updateSearch} 
                         updateHideSections = {this.updateHideSections}
                         updateHideEmptyFolders = {this.updateHideEmptyFolders}
+                        updateOrderByOption = {this.updateOrderByOption}
                     />
                     <Table striped bordered hover responsive='md'>
                         <thead>
@@ -201,7 +223,7 @@ export default class TopicTable extends React.Component {
                         </thead>
                         <tbody>
                             {
-                                this.state.folderPathStack.top() !== folderArray[0] &&
+                                this.state.folderPathStack.top() !== folderArray.folders[0] &&
                                 <tr onClick={this.goToParentFolder}
                                     style={{ cursor: 'pointer' }}
                                 >
