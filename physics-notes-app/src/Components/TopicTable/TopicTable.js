@@ -116,20 +116,6 @@ export default class TopicTable extends React.Component {
 
     updateOrderByOption = event => this.setState({ orderByOption: event.target.id })
 
-    // orderFolders will order the folders based off of the orderByOption property
-    // in the state.
-    orderFolders = folders => {
-
-        const { orderByOption } = this.state;
-
-        // Here we use a switch statement to decide what to do depending on
-        // the orderByOption in the state
-        switch (orderByOption) {
-            case 'Number':
-        }
-
-    }
-
     /* filterFolders = folders => {
 
         const { searchBarText, hideSections, hideEmptyFolders, orderByOption } = this.state;
@@ -182,7 +168,7 @@ export default class TopicTable extends React.Component {
 
         const { folderArray, folderDirectoryTree, folderPathStack } = this.state;
 
-        const filteredFolders = folderArray.getFilteredFolders(this.state);
+        const finalFolderArray = folderArray.getFinalFolders(this.state);
 
         // If the folders hav not been fetched then don't render the table and show a
         // page indicating that the folders are being fetched.
@@ -231,7 +217,7 @@ export default class TopicTable extends React.Component {
                                 </tr>
                             }
                             {
-                                filteredFolders.map((childFolder, i) => {
+                                finalFolderArray.folders.map((childFolder, i) => {
                                     return (
                                         <FolderRow
                                             key={i}

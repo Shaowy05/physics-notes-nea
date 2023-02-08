@@ -1,4 +1,4 @@
-export default mergeSort = array => {
+const mergeSort = array => {
 
     // The base case for the recursive algorithm.
     // An array of length 0 or 1 is considered sorted.
@@ -53,3 +53,5 @@ const merge = (left, right) => {
     }
     
 }
+
+export {mergeSort as default, merge};
