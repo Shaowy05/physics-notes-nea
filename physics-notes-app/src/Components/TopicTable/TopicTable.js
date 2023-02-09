@@ -62,18 +62,19 @@ export default class TopicTable extends React.Component {
                 })
             })
             .then(folders => {
-                const fDT = this.createFolderTree(folders);
-                const fA = this.state.folderArray.folders.concat(folders);
+
+                const fA = new FolderArray(this.state.folderArray.folders.concat(folders));
+                const fDT = this.createFolderTree(fA.folders);
 
                 this.setState({
-                    folderArray: new FolderArray(fA),
+                    folderArray: fA,
                     folderDirectoryTree: fDT
                 });
 
             })
     }
 
-    createFolderTree = (folders) => {
+    createFolderTree = folders => {
 
         const folderDirectoryTree = new Tree(new TreeNode(0), 50);
 
@@ -116,59 +117,12 @@ export default class TopicTable extends React.Component {
 
     updateOrderByOption = event => this.setState({ orderByOption: event.target.id })
 
-    /* filterFolders = folders => {
-
-        const { searchBarText, hideSections, hideEmptyFolders, orderByOption } = this.state;
-        let filteredFolders;
-        
-        const currentFolder = this.state.folderPathStack.top();
-        const currentTreeNode = this.state.folderDirectoryTree.breadthFirstTraversal(currentFolder.id);
-
-        // There are 2 cases for displaying the folders:
-        // 1. The sections are hidden, allowing the user to view
-        //    the topics without having to navigate.
-        // 2. The sections are not hidden, i.e rendering regularly.
-        // The state holds a boolean called hideSections that decides
-        // which option should occur.        
-
-        if (hideSections && currentFolder.type !== 'topic') {
-            filteredFolders = folders.filter(folder => {
-                return folder.type === 'topic' ? true : false;
-            })
-        } else {
-            filteredFolders = folders.filter(folder => {
-                let isChildOfCurrentFolder = false;
-                currentTreeNode.getChildren().forEach(childNode => {
-                    if (childNode.key === folder.id) {
-                        isChildOfCurrentFolder = true;
-                    }
-                })
-                return isChildOfCurrentFolder;
-            })
-        }
-
-        // Then we check to see if empty folders should be removed.
-        if (hideEmptyFolders) {
-            filteredFolders = filteredFolders.filter(folder => folder.hasNotes);
-        }
-
-        // If there is any text in the search bar, filter by name
-        if (searchBarText !== '') {
-            filteredFolders = filteredFolders.filter(folder => folder.title.toLowerCase().includes(searchBarText.toLowerCase()));
-        }
-
-        filteredFolders = (orderByOption !== '') ? this.orderFolders(filteredFolders) : filteredFolders; 
-
-        return filteredFolders;
-
-    } */
-
     // Render method for TopicTable
     render() {
 
         const { folderArray, folderDirectoryTree, folderPathStack } = this.state;
 
-        const finalFolderArray = folderArray.getFinalFolders(this.state);
+        const folders = folderArray.getFolders(this.state);
 
         // If the folders hav not been fetched then don't render the table and show a
         // page indicating that the folders are being fetched.
@@ -217,7 +171,7 @@ export default class TopicTable extends React.Component {
                                 </tr>
                             }
                             {
-                                finalFolderArray.folders.map((childFolder, i) => {
+                                folders.map((childFolder, i) => {
                                     return (
                                         <FolderRow
                                             key={i}

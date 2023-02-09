@@ -4,44 +4,34 @@
 
 import mergeSort from "./Algorithms/MergeSort";
 
-const ALPHABET_MAX_DEPTH = 1;
+const ALPHABET_MAX_DEPTH = 2;
 
 export default class FolderArray {
 
     constructor(folders) {
 
-        this.folders = folders;
+        // By default sort the folders by ID
+        this.folders = this.orderFoldersById(folders);
 
     }
 
-    // Filtering the folders - the following method is used to return
-    // a version of the folder array which is filtered.
-    getFilteredFolders = state => {
-        const { 
-            searchBarText,
-            hideSections, 
-            hideEmptyFolders 
-        } = state;
-        let filteredFolders = new FolderArray([]);
+    // filterFolders takes an array of folders and removes folders, based off of
+    // the information passed in as a parameter.
+    filterFolders = (folders, currentFolder, folderDirectoryTree, searchBarText, hideSections, hideEmptyFolders) => {
 
-        const currentFolder = state.folderPathStack.top();
-        const currentTreeNode = state.folderDirectoryTree.breadthFirstTraversal(currentFolder.id);
-        const folders = this.folders;
+        const currentTreeNode = folderDirectoryTree.breadthFirstTraversal(currentFolder.id);
 
-        // There are 2 cases for displaying the folders:
-        // 1. The sections are hidden, allowing the user to view
-        //    the topics without having to navigate.
-        // 2. The sections are not hidden, i.e rendering regularly.
-        // The state holds a boolean called hideSections that decides
-        // which option should occur.
+        // Initialise the filtered folders array. This is to be returned at the
+        // end of the method.
+        let filteredFolders;
 
+        // Hiding Sections -
         if (hideSections && currentFolder.type !== 'topic') {
-            filteredFolders.folders = folders.filter(folder => {
-                return folder.type === 'topic' ? true : false;
-            })
-
-        } else {
-            filteredFolders.folders = folders.filter(folder => {
+            filteredFolders = folders.filter(folder => folder.type === 'topic' ? true : false);
+        }
+        // Or getting the child folders of the selected node -
+        else {
+            filteredFolders = folders.filter(folder => {
                 let isChildOfCurrentFolder = false;
                 currentTreeNode.getChildren().forEach(childNode => {
                     if (childNode.key === folder.id) {
@@ -52,95 +42,147 @@ export default class FolderArray {
             })
         }
 
-        // Then we check to see if empty folders should be removed.
+        // Hiding Empty Folders -
         if (hideEmptyFolders) {
-            filteredFolders.folders = filteredFolders.folders.filter(folder => folder.hasNotes);
+            filteredFolders = filteredFolders.filter(folder => folder.hasNotes);
         }
 
-        // If there is any text in the search bar, filter by name
+        // Filtering by text -
         if (searchBarText !== '') {
-            filteredFolders.folders = filteredFolders.folders.filter(folder => folder.title.toLowerCase().includes(searchBarText.toLowerCase()));
+            filteredFolders = filteredFolders.filter(folder => folder.title.toLowerCase().includes(searchBarText.toLowerCase()));
         }
 
+        // Finally return the folders
         return filteredFolders;
 
     }
 
-    getOrderedFolders = (state, folders) => {
+    // Ordering the folders -
+    orderFolders = (folders, orderByOption) => {
 
-        // There are multiple ways to order the folders, defined by the 
-        // orderByOption in the state which is passed in here as a parameter.
-        const { orderByOption } = state;
+        let orderedFolders;
 
-        // To order the folders, we need to give each folder a sort value that
-        // allows us to run the mergesort. This sort value will depend on the
-        // type of sorting we want to do and also the position at which the item should fall.
-        // I'm going to achieve this by making an object keys of sort value.
-
-        const sortValues = new Array();
-        const folderSortValuePairs = {};
-
+        // Select which function to run using a switch case statement
         switch (orderByOption) {
 
-            case 'Title':
-                folders.forEach(folder => {
-                    sortValues.push(this.getAlphabeticalSortValue(folder.title, ALPHABET_MAX_DEPTH));
-                });
+            case 'Number':
+                orderedFolders = this.orderFoldersByNumber(folders);
                 break;
 
             default:
-                folders.forEach(folder => {
-                    sortValues.push(folder.id);
-                })
+                orderedFolders = this.orderFoldersById(folders);
 
         }
 
-        console.log(sortValues);
+        return orderedFolders;
+        
+    }
 
-        for (let i = 0; i < this.folders.length; i++) {
-            folderSortValuePairs[sortValues[i]] = this.folders[i];
-        }
+    // Ordering the folders by their id. This method is special,
+    // as by default this is run. This is also run after each
+    // other ordering method, i.e. if 2 folders are indistinguishable
+    // they should by default be ordered by their ID.
+    orderFoldersById = folders => {
 
-        const orderedSortValues = mergeSort(sortValues);
+        let orderedFolders = [];
+        let idArray = [];
 
-        const orderedFolders = new FolderArray([]);
+        // Create an object with key value pairs. The key is the id
+        // of the folder and the value is the folder itself. This way
+        // the ids can be sorted without the overhead information of
+        // the folder.
+        const idToFolder = {};
 
-        orderedSortValues.forEach(sortValue => orderedFolders.folders.push(folderSortValuePairs[sortValue]));
+        folders.forEach(folder => {
+            // Add the id to folder pair
+            idToFolder[folder.id] = folder;
+
+            // Add the id to the idArray
+            idArray.push(folder.id);
+        })
+
+        // Sort the IDs
+        idArray = mergeSort(idArray);
+
+        // Push the respective folders into orderedFolders using the sorted
+        // IDs.
+        idArray.forEach(id => orderedFolders.push(idToFolder[id]));
 
         return orderedFolders;
 
     }
 
-    getAlphabeticalSortValue = (title, maxDepth) => {
-        // Getting the alphabetical sort value works as such:
-        // Iterate from the first character through the title, until you have
-        // examined a number of characters indicated by maxDepth - this is
-        // how many letters into the title the function will search.
-        // Get the unicode representation of these 5 characters, multiply it
-        // by a power of 10, respective to its position in the title
-        // and then add all of them together. This way, the word 'aab'
-        // will have a larger sortValue than 'aaa'.
+    // Order folders by number.
+    orderFoldersByNumber = folders => {
 
-        let sortValue = 0;
+        // Currently there are no folders that have overlapping numbers that
+        // can appear at the same time, as folders and sections can't be displayed
+        // simultaneously, but in the future this may not be the case.
+        // Because of this, we need to ensure that folders with the same number
+        // are then ordered by ID afterwards.
 
-        const lowerCaseTitle = title.toLowerCase();
-        for (let i = 0; i < maxDepth; i++) {
-            sortValue += lowerCaseTitle.charCodeAt(i) * (10 ** i);
+        let orderedFolders = [];
+
+        // numberToFolders is an object similar to idToFolder from above, but
+        // here each value will be an array of folders that all share the same
+        // folder number. These will all then be individually sorted.
+        const numberToFolders = {};
+
+        folders.forEach(folder => {
+            
+            // If there is no entry for this folders number, then
+            // create a new key-value pair
+            if (numberToFolders[folder.number] === undefined) {
+                numberToFolders[folder.number] = [folder];
+            }
+            // Otherwise, if there is already a key
+            else {
+                numberToFolders[folder.number].push(folder);
+            }
+
+        })
+
+        // Then we need to sort each individual array in the numberToFolders
+        // object by ID. Here we use the previously implemented orderFoldersById
+        for (const [number, folders] of Object.entries(numberToFolders)) {
+            numberToFolders[number] = this.orderFoldersById(folders);
         }
 
-        return sortValue;
+        // Now we loop through each of the key value pairs in numberToFolders, and
+        // concatenate the arrays to make a final sorted array.
+        Object.values(numberToFolders).forEach(folders => orderedFolders = orderedFolders.concat(folders));
+
+        return orderedFolders;
 
     }
 
-    getFinalFolders = state => {
+    orderFoldersByTitle = folders => {
+
+    }
+
+    // getFolders is a method to return the folders in adjusted form.
+    getFolders = state => {
+
+        const {
+            searchBarText,
+            hideSections,
+            hideEmptyFolders,
+            orderByOption
+        } = state;
+
+        const currentFolder = state.folderPathStack.top();
+        const folderDirectoryTree = state.folderDirectoryTree;
+
         let folders = this.folders;
-        folders = this.getFilteredFolders(state);
-        
-        if (state.orderByOption !== '') {
-            folders = this.getFinalFolders(state);
-        }
+
+        // Filter the folders
+        folders = this.filterFolders(folders, currentFolder, folderDirectoryTree, searchBarText, hideSections, hideEmptyFolders);
+
+        // Order the folders
+        folders = this.orderFolders(folders, orderByOption);
 
         return folders;
+
     }
 
 }

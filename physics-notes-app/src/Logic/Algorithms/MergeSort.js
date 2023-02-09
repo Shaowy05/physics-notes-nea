@@ -7,8 +7,8 @@ const mergeSort = array => {
     }
 
     // Recursive case
-    let left = new Array()
-    let right = new Array()
+    let left = [];
+    let right = [];
 
     array.forEach((element, i) => {
         if (i < array.length / 2) {
@@ -28,30 +28,29 @@ const mergeSort = array => {
 const merge = (left, right) => {
 
     // Instantiate the variable to store the merged array
-    let merged = new Array();
+    let merged = [];
 
     while (left.length !== 0 && right.length !== 0) {
+
         if (left[0] <= right[0]) {
-            merged.push(left[0]);
-            left.shift();
+            merged.push(left.shift());
         } else {
-            merged.push(right[0]);
-            right.shift();
+            merged.push(right.shift());
         }
-
-        // Either array may have elements left in them.
-        // Here we add them onto the end of the array
-        if (left.length !== 0) {
-            merged.push(left);
-        }
-        if (right.length !== 0) {
-            merged.push(right);
-        }
-
-        return merged;
 
     }
     
+    // Either array may have elements left in them.
+    // Here we add them onto the end of the array
+    if (left.length !== 0) {
+        merged = merged.concat(left);
+    }
+    if (right.length !== 0) {
+        merged = merged.concat(right);
+    }
+
+    return merged;
+
 }
 
 export {mergeSort as default, merge};
