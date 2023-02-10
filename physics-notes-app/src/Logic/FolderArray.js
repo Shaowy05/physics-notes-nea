@@ -69,6 +69,10 @@ export default class FolderArray {
                 orderedFolders = this.orderFoldersByNumber(folders);
                 break;
 
+            case 'Title':
+                orderedFolders = this.orderFoldersByTitle(folders);
+                break;
+
             default:
                 orderedFolders = this.orderFoldersById(folders);
 
@@ -127,6 +131,7 @@ export default class FolderArray {
         // here each value will be an array of folders that all share the same
         // folder number. These will all then be individually sorted.
         const numberToFolders = {};
+        let numbers = [];
 
         folders.forEach(folder => {
             
@@ -134,6 +139,10 @@ export default class FolderArray {
             // create a new key-value pair
             if (numberToFolders[folder.number] === undefined) {
                 numberToFolders[folder.number] = [folder];
+
+                // And add the number to the array of numbers
+                numbers.push(folder.number);
+
             }
             // Otherwise, if there is already a key
             else {
@@ -148,15 +157,88 @@ export default class FolderArray {
             numberToFolders[number] = this.orderFoldersById(folders);
         }
 
-        // Now we loop through each of the key value pairs in numberToFolders, and
-        // concatenate the arrays to make a final sorted array.
-        Object.values(numberToFolders).forEach(folders => orderedFolders = orderedFolders.concat(folders));
+        // Then sort the numbers array
+        numbers = mergeSort(numbers);
+
+        // Now we iterate over the numbers array, and concatenate the folders in order
+        numbers.forEach(number => {
+            orderedFolders = orderedFolders.concat(numberToFolders[number]);
+        });
 
         return orderedFolders;
 
     }
 
-    orderFoldersByTitle = folders => {
+    // The subroutine for sorting the folders by title. This is a recursive algorithm.
+    // Here characterIndex is the index of the strings to compare.
+    orderFoldersByTitle = (folders, characterIndex = 0) => {
+
+        let orderedFolders = [];
+        let characterCodes = [];
+
+        // Any folders that have already been completely looked through should be added
+        // straight to orderedFolders, and removed from the folders array.
+        folders = folders.filter(folder => {
+                    
+            // Use regex to remove spaces and make lower case.
+            const correctedTitle = folder.title.toLowerCase().replace(/\s+/g, '');
+
+            // If the title's length is the character index...
+            if (correctedTitle.length === characterIndex) {
+                orderedFolders.push(folder);
+                return false;
+            }
+            // Otherwise do not remove it from the folders array
+            else {
+                return true;
+            }
+
+        });
+
+        // Titles do not have inherent numerical values, and so they must be sorted
+        // recursively. This function will sort a specific index of characters, so the first
+        // iteration will sort the first character etc.
+
+        const charCodeToFolders = {};
+
+        folders.forEach(folder => {
+
+            // Here we use regex to make all the characters lowercase and remove whitespace.
+            const correctedTitle = folder.title.toLowerCase().replace(/\s+/g, '');
+            const folderCharacterCode = correctedTitle.charCodeAt(characterIndex);            
+
+            // If there is not already an entry for that character code then add it to the
+            // charCodeToFolders object.
+            if (charCodeToFolders[folderCharacterCode] === undefined) {
+                charCodeToFolders[folderCharacterCode] = [folder];
+                characterCodes.push(folderCharacterCode);
+            }
+            // Otherwise append it to the array
+            else {
+                charCodeToFolders[folderCharacterCode].push(folder);
+            }
+        })
+
+        // Loop through each of the key value pairs, if the length of array of folders is
+        // not 1, then sort that array with orderFoldersByTitle with an increased character
+        // index.
+        for (const [charCode, folders] of Object.entries(charCodeToFolders)) {
+            // If the length of the array is not 1 then it needs to be sorted.
+            if (folders.length !== 1) {
+                // Order the folders by title with an increased characterIndex.
+                charCodeToFolders[charCode] = this.orderFoldersByTitle(folders, characterIndex + 1);
+            }
+        }
+
+        // Sort the character codes.
+        characterCodes = mergeSort(characterCodes);
+
+        // Concatenate all the arrays.
+        characterCodes.forEach(charCode => {
+            orderedFolders = orderedFolders.concat(charCodeToFolders[charCode]);
+        })
+
+        return orderedFolders;
 
     }
 
