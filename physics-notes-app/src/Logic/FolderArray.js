@@ -4,8 +4,6 @@
 
 import mergeSort from "./Algorithms/MergeSort";
 
-const ALPHABET_MAX_DEPTH = 2;
-
 export default class FolderArray {
 
     constructor(folders) {

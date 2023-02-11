@@ -46,6 +46,13 @@ app.get('/folders', (req, res) => {
 
 });
 
+// Route - /logins
+// POST Requests
+app.post('/logins', (req, res) => {
+
+    
+
+})
 
 // Finally telling the app to listen on port 3000
 app.listen(3000, () => {
