@@ -50,9 +50,34 @@ app.get('/folders', (req, res) => {
 // POST Requests
 app.post('/logins', (req, res) => {
 
-    
+    const { folderId } = req.body;
+
+    // SELECT tag_id, tag_name
+    // FROM folders, tags, folder_to_tag
+    // WHERE folders.folder_id = folderId
+    // AND tags.tag_id = folder_to_tag.tag_id
+    // AND folders.folder_id = folder_to_tag.folder_id
+    db.select('tag_id', 'tag_name').from('folders', 'tags', 'folder_to_tag')
+        .where('folders.folder_id', '=', folderId)
+        .and('tags.tag_id', '=', 'folder_to_tag.tag_id')
+        .and('folder.folder_id', '=', 'folder_to_tag.folder_id')
+        .then(data => res.json(data))
+        .catch(err => res.status(400).json(err));
 
 })
+
+// Route - /tags
+// GET Requests
+
+// Route for getting all the tags regardless of the folder
+app.get('/tags', (req, res) => {
+
+    // SELECT * FROM tags
+    db.select('*').from('tags')
+        .then(data => res.json(data))
+        .catch(err => res.status(400).json('Unable to get tags'));
+
+});
 
 // Finally telling the app to listen on port 3000
 app.listen(3000, () => {

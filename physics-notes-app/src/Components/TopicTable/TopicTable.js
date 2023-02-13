@@ -15,6 +15,7 @@ import FolderArray from "../../Logic/FolderArray";
 import FolderPath from "../FolderPath/FolderPath";
 import FolderRow from "../FolderRow/FolderRow";
 import FilterCard from "../FilterCard/FilterCard";
+import Tag from "../../Logic/Tag";
 
 export default class TopicTable extends React.Component {
 
@@ -35,7 +36,9 @@ export default class TopicTable extends React.Component {
             hideSections: false,
             hideEmptyFolders: false,
 
-            orderByOption: ''
+            orderByOption: 'Number',
+
+            tags: []
 
         };
 
@@ -61,6 +64,56 @@ export default class TopicTable extends React.Component {
                     reject('Failed to convert folder objects to array of folders');
                 })
             })
+            /* .then(folders => {
+
+                const fA = new FolderArray(this.state.folderArray.folders.concat(folders));
+                const fDT = this.createFolderTree(fA.folders);
+
+                this.setState({
+                    folderArray: fA,
+                    folderDirectoryTree: fDT
+                });
+
+                return new Promise((resolve, reject) => {
+                    resolve(folders);
+                    reject('Failed to continue on to add tags');
+                });
+
+            }) */
+            /* .then(folders => {
+                let tagFetchPromises = [];
+                tagFetchPromises = folders.map(folder => {
+                    fetch('http://localhost:3000/tags', {
+                        method: 'Post',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            folder_id: folder.id
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(tagObjects => {
+                        const tags = tagObjects.map(tagObject => {
+                            const tagValues = Object.values(tagObject)
+                            return new Tag(
+                                tagValues[0],
+                                tagValues[1]
+                            );
+                        })
+                        return new Promise((resolve, reject) => {
+                            resolve(tags);
+                            reject('Failed to convert tags');
+                        })
+                    })
+                    .then(tags => {
+                        return new Promise((resolve, reject) => {
+                            tags.forEach(tag => folder.addTag(tag));
+                            resolve(folder);
+                            reject('Failed to add tags to folder');
+                        })
+                    })
+                })
+                return Promise.all(tagFetchPromises)
+            }) */
             .then(folders => {
 
                 const fA = new FolderArray(this.state.folderArray.folders.concat(folders));
@@ -71,7 +124,24 @@ export default class TopicTable extends React.Component {
                     folderDirectoryTree: fDT
                 });
 
+                return new Promise((resolve, reject) => {
+                    resolve(folders);
+                    reject('Failed to continue on to add tags');
+                });
+
             })
+
+        fetch('http://localhost:3000/tags')
+            .then(response => response.json())
+            .then(tagObjects => {
+                let tags = tagObjects;
+                tags = tags.map(tagObject => new Tag(tagObject.tag_id, tagObject.tag_name));
+                this.setState({ tags: tags });
+                return new Promise((resolve, reject) => {
+                    resolve('s');
+                })
+            });
+
     }
 
     createFolderTree = folders => {
@@ -120,7 +190,7 @@ export default class TopicTable extends React.Component {
     // Render method for TopicTable
     render() {
 
-        const { folderArray, folderDirectoryTree, folderPathStack } = this.state;
+        const { folderArray, folderDirectoryTree, folderPathStack, tags } = this.state;
 
         const folders = folderArray.getFolders(this.state);
 
@@ -144,6 +214,7 @@ export default class TopicTable extends React.Component {
                         updateHideSections = {this.updateHideSections}
                         updateHideEmptyFolders = {this.updateHideEmptyFolders}
                         updateOrderByOption = {this.updateOrderByOption}
+                        tags = {tags}
                     />
                     <Table striped bordered hover responsive='md'>
                         <thead>

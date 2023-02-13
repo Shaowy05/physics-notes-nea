@@ -5,6 +5,7 @@ import Card from 'react-bootstrap/Card';
 import Collapse from 'react-bootstrap/Collapse';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form';
+import ToggleButton from 'react-bootstrap/ToggleButton';
 
 export default class FilterCard extends React.Component {
 
@@ -20,7 +21,11 @@ export default class FilterCard extends React.Component {
     render() {
 
         const { open } = this.state;
-        const { updateSearch, updateHideSections, updateHideEmptyFolders, updateOrderByOption } = this.props;
+        const { 
+            updateSearch, updateHideSections, updateHideEmptyFolders, updateOrderByOption,
+            tags 
+        } = this.props;
+        console.log(tags);
 
         // The different ways to order the folders, stored in an array.
         // This allows for us to use the .map function to more efficiently
@@ -73,6 +78,22 @@ export default class FilterCard extends React.Component {
                                             onChange={updateOrderByOption}
                                         />
                                     ))
+                                }
+                                </div>
+                                <Form.Text>Tags:</Form.Text>
+                                <div id={'tag-buttons'}>
+                                {
+                                    tags.map((tag, i) => 
+                                        <ToggleButton
+                                            key={i}
+                                            className='h-25 m-1'
+                                            type='checkbox' 
+                                            variant='outline-primary'
+                                            onClick={tag.toggleActive}
+                                        >
+                                            {tag.name}
+                                        </ToggleButton>
+                                    )
                                 }
                                 </div>
                             </div>

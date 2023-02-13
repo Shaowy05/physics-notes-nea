@@ -8,8 +8,8 @@ export default class FolderArray {
 
     constructor(folders) {
 
-        // By default sort the folders by ID
-        this.folders = this.orderFoldersById(folders);
+        // By default sort the folders by number
+        this.folders = this.orderFoldersByNumber(folders);
 
     }
 
