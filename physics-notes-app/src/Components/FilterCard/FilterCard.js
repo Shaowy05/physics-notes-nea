@@ -23,7 +23,7 @@ export default class FilterCard extends React.Component {
         const { open } = this.state;
         const { 
             updateSearch, updateHideSections, updateHideEmptyFolders, updateOrderByOption,
-            tags 
+            tags, updateTagAtIndex 
         } = this.props;
         console.log(tags);
 
@@ -86,10 +86,11 @@ export default class FilterCard extends React.Component {
                                     tags.map((tag, i) => 
                                         <ToggleButton
                                             key={i}
-                                            className='h-25 m-1'
+                                            className='m-1'
                                             type='checkbox' 
                                             variant='outline-primary'
-                                            onClick={tag.toggleActive}
+                                            checked={tag.active}
+                                            onClick={(e) => updateTagAtIndex(e, tag.index)}
                                         >
                                             {tag.name}
                                         </ToggleButton>

@@ -135,7 +135,7 @@ export default class TopicTable extends React.Component {
             .then(response => response.json())
             .then(tagObjects => {
                 let tags = tagObjects;
-                tags = tags.map(tagObject => new Tag(tagObject.tag_id, tagObject.tag_name));
+                tags = tags.map((tagObject, i) => new Tag(i, tagObject.tag_id, tagObject.tag_name));
                 this.setState({ tags: tags });
                 return new Promise((resolve, reject) => {
                     resolve('s');
@@ -187,6 +187,14 @@ export default class TopicTable extends React.Component {
 
     updateOrderByOption = event => this.setState({ orderByOption: event.target.id })
 
+    updateTagAtIndex = (event, index) => this.setState(state => {
+        let tempTags = state.tags;
+        const tempTag = tempTags[index];
+        tempTag.toggleActive();
+        tempTags[index] = tempTag;
+        return { tags: tempTags };
+    })
+
     // Render method for TopicTable
     render() {
 
@@ -215,6 +223,7 @@ export default class TopicTable extends React.Component {
                         updateHideEmptyFolders = {this.updateHideEmptyFolders}
                         updateOrderByOption = {this.updateOrderByOption}
                         tags = {tags}
+                        updateTagAtIndex = {this.updateTagAtIndex}
                     />
                     <Table striped bordered hover responsive='md'>
                         <thead>
