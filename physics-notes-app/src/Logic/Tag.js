@@ -9,7 +9,6 @@ export default class Tag {
 
     toggleActive = () => {
         this.active = !this.active;
-        console.log(this.active);
     }
 
 }

@@ -16,7 +16,6 @@ import FolderPath from "../FolderPath/FolderPath";
 import FolderRow from "../FolderRow/FolderRow";
 import FilterCard from "../FilterCard/FilterCard";
 import Tag from "../../Logic/Tag";
-import Graph from "../../Logic/Graph";
 
 export default class TopicTable extends React.Component {
 
@@ -31,8 +30,6 @@ export default class TopicTable extends React.Component {
             folderArray: new FolderArray([rootFolder]),
             folderDirectoryTree: new Tree(new TreeNode(0)),
             folderPathStack: initialPathStack,
-
-            folderToTagGraph: new Graph,
 
             searchBarText: '',
 
@@ -102,16 +99,30 @@ export default class TopicTable extends React.Component {
             .then(response => response.json())
             .catch(err => console.log('Failed to get relations'));
 
-        // Once all the tags and folders have been fetched, we can create a graph from
-        // them to allow for filtering by tags.
+        // Once all the tags and folders have been fetched, we can add the tags to the folders
+        // to allow for filtering by tags.
         Promise.all([fetchFolders, fetchTags, fetchFolderTagRelations])
             .then(data => {
 
+                // Storing all the data in constants for easier use
                 const folders = data[0];
                 const tags = data[1];
                 const relations = data[2];
 
-                const folderToTagGraph = new Graph(folders.length + tags.length);
+                // Adding the tags to the folders
+                folders.forEach(folder => {
+
+                    const filteredRelations = relations.filter(relation => (relation.folder_id === folder.id) ? true : false);
+
+                    filteredRelations.forEach(relation => {
+                        tags.forEach(tag => {
+                            if (tag.id === relation.tag_id) {
+                                folder.addTag(tag);
+                            }
+                        })
+                    })
+
+                })
 
             })
 

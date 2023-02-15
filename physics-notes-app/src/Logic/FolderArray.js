@@ -15,7 +15,7 @@ export default class FolderArray {
 
     // filterFolders takes an array of folders and removes folders, based off of
     // the information passed in as a parameter.
-    filterFolders = (folders, currentFolder, folderDirectoryTree, searchBarText, hideSections, hideEmptyFolders) => {
+    filterFolders = (folders, currentFolder, folderDirectoryTree, searchBarText, hideSections, hideEmptyFolders, tags) => {
 
         const currentTreeNode = folderDirectoryTree.breadthFirstTraversal(currentFolder.id);
 
@@ -48,6 +48,27 @@ export default class FolderArray {
         // Filtering by text -
         if (searchBarText !== '') {
             filteredFolders = filteredFolders.filter(folder => folder.title.toLowerCase().includes(searchBarText.toLowerCase()));
+        }
+
+        // Filtering by tag -
+        // First determine whether any tags are active
+        const activeTags = tags.filter(tag => tag.active)
+        if (activeTags.length !== 0) {
+            filteredFolders = filteredFolders.filter(folder => {
+
+                let folderHasActiveTag = false;
+
+                activeTags.forEach(activeTag => {
+                    folder.tags.forEach(folderTag => {
+                        if (activeTag.id === folderTag.id) {
+                            folderHasActiveTag = true;
+                        }
+                    })
+                })
+
+                return folderHasActiveTag;
+
+            });
         }
 
         // Finally return the folders
@@ -247,7 +268,8 @@ export default class FolderArray {
             searchBarText,
             hideSections,
             hideEmptyFolders,
-            orderByOption
+            orderByOption,
+            tags
         } = state;
 
         const currentFolder = state.folderPathStack.top();
@@ -256,7 +278,7 @@ export default class FolderArray {
         let folders = this.folders;
 
         // Filter the folders
-        folders = this.filterFolders(folders, currentFolder, folderDirectoryTree, searchBarText, hideSections, hideEmptyFolders);
+        folders = this.filterFolders(folders, currentFolder, folderDirectoryTree, searchBarText, hideSections, hideEmptyFolders, tags);
 
         // Order the folders
         folders = this.orderFolders(folders, orderByOption);
