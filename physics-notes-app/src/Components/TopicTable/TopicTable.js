@@ -16,6 +16,7 @@ import FolderPath from "../FolderPath/FolderPath";
 import FolderRow from "../FolderRow/FolderRow";
 import FilterCard from "../FilterCard/FilterCard";
 import Tag from "../../Logic/Tag";
+import Graph from "../../Logic/Graph";
 
 export default class TopicTable extends React.Component {
 
@@ -31,6 +32,8 @@ export default class TopicTable extends React.Component {
             folderDirectoryTree: new Tree(new TreeNode(0)),
             folderPathStack: initialPathStack,
 
+            folderToTagGraph: new Graph,
+
             searchBarText: '',
 
             hideSections: false,
@@ -45,7 +48,7 @@ export default class TopicTable extends React.Component {
     }
 
     componentDidMount = () => {
-        fetch('http://localhost:3000/folders')            
+        const fetchFolders = fetch('http://localhost:3000/folders')            
             .then(response => response.json())
             .then(folderObjects => {
                 return new Promise((resolve, reject) => {
@@ -64,56 +67,6 @@ export default class TopicTable extends React.Component {
                     reject('Failed to convert folder objects to array of folders');
                 })
             })
-            /* .then(folders => {
-
-                const fA = new FolderArray(this.state.folderArray.folders.concat(folders));
-                const fDT = this.createFolderTree(fA.folders);
-
-                this.setState({
-                    folderArray: fA,
-                    folderDirectoryTree: fDT
-                });
-
-                return new Promise((resolve, reject) => {
-                    resolve(folders);
-                    reject('Failed to continue on to add tags');
-                });
-
-            }) */
-            /* .then(folders => {
-                let tagFetchPromises = [];
-                tagFetchPromises = folders.map(folder => {
-                    fetch('http://localhost:3000/tags', {
-                        method: 'Post',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            folder_id: folder.id
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(tagObjects => {
-                        const tags = tagObjects.map(tagObject => {
-                            const tagValues = Object.values(tagObject)
-                            return new Tag(
-                                tagValues[0],
-                                tagValues[1]
-                            );
-                        })
-                        return new Promise((resolve, reject) => {
-                            resolve(tags);
-                            reject('Failed to convert tags');
-                        })
-                    })
-                    .then(tags => {
-                        return new Promise((resolve, reject) => {
-                            tags.forEach(tag => folder.addTag(tag));
-                            resolve(folder);
-                            reject('Failed to add tags to folder');
-                        })
-                    })
-                })
-                return Promise.all(tagFetchPromises)
-            }) */
             .then(folders => {
 
                 const fA = new FolderArray(this.state.folderArray.folders.concat(folders));
@@ -126,21 +79,41 @@ export default class TopicTable extends React.Component {
 
                 return new Promise((resolve, reject) => {
                     resolve(folders);
-                    reject('Failed to continue on to add tags');
+                    reject('Failed to create folder array and tree');
                 });
 
             })
+            .catch(err => console.log('Error occurred while retrieving folders'));
 
-        fetch('http://localhost:3000/tags')
+        const fetchTags = fetch('http://localhost:3000/tags')
             .then(response => response.json())
             .then(tagObjects => {
                 let tags = tagObjects;
                 tags = tags.map((tagObject, i) => new Tag(i, tagObject.tag_id, tagObject.tag_name));
                 this.setState({ tags: tags });
                 return new Promise((resolve, reject) => {
-                    resolve('s');
+                    resolve(tags);
+                    reject('Failed to retrieve tags');
                 })
-            });
+            })
+            .catch(err => console.log('Error occurred while retrieving tags'));
+
+        const fetchFolderTagRelations = fetch('http://localhost:3000/folder-to-tag')
+            .then(response => response.json())
+            .catch(err => console.log('Failed to get relations'));
+
+        // Once all the tags and folders have been fetched, we can create a graph from
+        // them to allow for filtering by tags.
+        Promise.all([fetchFolders, fetchTags, fetchFolderTagRelations])
+            .then(data => {
+
+                const folders = data[0];
+                const tags = data[1];
+                const relations = data[2];
+
+                const folderToTagGraph = new Graph(folders.length + tags.length);
+
+            })
 
     }
 

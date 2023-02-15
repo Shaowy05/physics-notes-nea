@@ -25,7 +25,6 @@ export default class FilterCard extends React.Component {
             updateSearch, updateHideSections, updateHideEmptyFolders, updateOrderByOption,
             tags, updateTagAtIndex 
         } = this.props;
-        console.log(tags);
 
         // The different ways to order the folders, stored in an array.
         // This allows for us to use the .map function to more efficiently
@@ -81,7 +80,10 @@ export default class FilterCard extends React.Component {
                                 }
                                 </div>
                                 <Form.Text>Tags:</Form.Text>
-                                <div id={'tag-buttons'}>
+                                <div id={'tag-buttons'} style={{
+                                    height: '200px',
+                                    overflow: 'auto'
+                                }}>
                                 {
                                     tags.map((tag, i) => 
                                         <ToggleButton

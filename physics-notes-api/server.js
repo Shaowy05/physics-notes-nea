@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 dotenv.config()
 
 // Importing Express to use as our server framework
-import express from 'express';
+import express, { response } from 'express';
 
 // Importing Cors to allow for Postman
 import cors from 'cors';
@@ -78,6 +78,36 @@ app.get('/tags', (req, res) => {
         .catch(err => res.status(400).json('Unable to get tags'));
 
 });
+
+// Route for getting the tags based off of a folders ID
+app.get('/tags/:id', (req, res) => {
+
+    const { folderId } = req.params;
+
+    // SELECT tags.tag_id, tag_name
+    // FROM tags, folder_to_tag
+    // WHERE tags.tag_id = folder_to_tag.tag_id
+    // AND folder_to_tag.folder_id = folderId
+    db.select('tags.tag_id', 'tag_name')
+        .from('tags', 'folder_to_tag')
+        .where('tags.tag_id', '=', 'folder_to_tag.tag_id')
+        .and('folder_to_tag.folder_id', '=', folderId)
+        .then(data => res.json(data))
+        .catch(console.log);
+
+})
+
+// Route - /folder-to-tag
+// GET Requests
+
+// Route for getting all the relations
+app.get('/folder-to-tag', (req, res) => {
+
+    db.select('*').from('folder_to_tag')
+        .then(data => res.json(data))
+        .catch(err => res.status(400).json('Unable to get relations'));
+
+})
 
 // Finally telling the app to listen on port 3000
 app.listen(3000, () => {
