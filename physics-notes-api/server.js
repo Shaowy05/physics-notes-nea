@@ -12,6 +12,9 @@ import cors from 'cors';
 // up the database connection
 import knex from 'knex';
 
+// Importing bcrypt to allow for hashing
+import bcrypt from 'bcrypt-nodejs';
+
 const db = knex({
     // Using Postgres
     client: 'pg',
@@ -46,23 +49,77 @@ app.get('/folders', (req, res) => {
 
 });
 
-// Route - /logins
+// Route - /login
 // POST Requests
-app.post('/logins', (req, res) => {
+app.post('/login', (req, res) => {
 
-    const { folderId } = req.body;
 
-    // SELECT tag_id, tag_name
-    // FROM folders, tags, folder_to_tag
-    // WHERE folders.folder_id = folderId
-    // AND tags.tag_id = folder_to_tag.tag_id
-    // AND folders.folder_id = folder_to_tag.folder_id
-    db.select('tag_id', 'tag_name').from('folders', 'tags', 'folder_to_tag')
-        .where('folders.folder_id', '=', folderId)
-        .and('tags.tag_id', '=', 'folder_to_tag.tag_id')
-        .and('folder.folder_id', '=', 'folder_to_tag.folder_id')
-        .then(data => res.json(data))
-        .catch(err => res.status(400).json(err));
+
+})
+
+// Route - /register
+// POST Requests
+app.post('/register', (req, res) => {
+
+    const {
+        email,
+        password,
+        first_name,
+        last_name,
+        intake
+    } = req.body;
+
+    // Using Regex to perform email validation on the email passed in.
+    // Here we define two valid strings, one for the teachers email, and
+    // one for the students email.
+    const reTeacherEmail = /\w+@ecclesbourne.derbyshire.sch.uk/;
+    const reStudentEmail = /\w{2}.\w+@ecclesbourne.derbyshire.sch.uk/;
+
+    // Creating the hash from the password
+    const hash = bcrypt.hashSync(password);
+
+    // If the email passed in is a teacher email
+    if (reTeacherEmail.test(email.toLowerCase())) {
+        db.transaction(trx => {
+            trx.insert({
+                // By default set teacher code to N/A, this can be updated
+                // manually later on.
+                teacher_code: 'N/A',
+                first_name: first_name,
+                last_name: last_name,
+                // By default has a private
+                // account
+                private: true,
+                // And by default is part of the physics department
+                department: "Physics"
+            })
+            .into('teachers')
+            .returning('teacher_id')
+            .then(teacherIdObject => {
+                return trx('teacher_logins')
+                    .returning('*')
+                    .insert({
+                        email: email.toLowerCase(),
+                        hash: hash,
+                        teacher_id: teacherIdObject[0].teacher_id
+                    })
+            })
+            .then(trx.commit)
+            .then(res.json('Successfully added new user'))
+            .catch(trx.rollback);
+        })
+        .catch(err => res.status(400).json('Unable to register new user'));
+    }
+    // If the email passed in is a student's email
+    else if (reStudentEmail.test(email)) {
+
+    }
+    // Else the email is invalid, then we send an error code
+    else {
+        res.json('Invalid email format - Are you registered with the school system?');
+        // Return out of the function
+        return null;
+    }
 
 })
 
