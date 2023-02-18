@@ -79,7 +79,39 @@ app.post('/register', (req, res) => {
     const hash = bcrypt.hashSync(password);
 
     // If the email passed in is a teacher email
-    if (reTeacherEmail.test(email.toLowerCase())) {
+    if (reStudentEmail.test(email)) {
+        db.transaction(trx => {
+            trx.insert({
+                first_name: first_name,
+                last_name: last_name,
+                intake: intake,
+                class_id: 0,
+                // By default cannot post
+                can_post: false,
+                // By default has a private
+                // account
+                private: true,
+            })
+            .into('users')
+            .returning('user_id')
+            .then(userObject => {
+                console.log(userObject)
+                return trx('logins')
+                    .returning('*')
+                    .insert({
+                        email: email.toLowerCase(),
+                        hash: hash,
+                        user_id: userObject[0].user_id
+                    })
+                    .then(res.json({ success: true }))
+            })
+            .then(trx.commit)
+            .catch(trx.rollback);
+        })
+        .catch(err => res.status(400).json('Unable to register new user'));
+    }
+    // If the email passed in is a student's email
+    else if (reTeacherEmail.test(email.toLowerCase())) {
         db.transaction(trx => {
             trx.insert({
                 // By default set teacher code to N/A, this can be updated
@@ -103,20 +135,16 @@ app.post('/register', (req, res) => {
                         hash: hash,
                         teacher_id: teacherIdObject[0].teacher_id
                     })
+                    .then(res.json({ success: true }))
             })
             .then(trx.commit)
-            .then(res.json('Successfully added new user'))
             .catch(trx.rollback);
         })
         .catch(err => res.status(400).json('Unable to register new user'));
     }
-    // If the email passed in is a student's email
-    else if (reStudentEmail.test(email)) {
-
-    }
     // Else the email is invalid, then we send an error code
     else {
-        res.json('Invalid email format - Are you registered with the school system?');
+        res.json({success: false});
         // Return out of the function
         return null;
     }
