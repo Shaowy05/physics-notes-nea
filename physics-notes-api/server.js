@@ -72,8 +72,8 @@ app.post('/register', (req, res) => {
     // Using Regex to perform email validation on the email passed in.
     // Here we define two valid strings, one for the teachers email, and
     // one for the students email.
+    const reStudentEmail = /\w{2}\.\w+@ecclesbourne.derbyshire.sch.uk/;
     const reTeacherEmail = /\w+@ecclesbourne.derbyshire.sch.uk/;
-    const reStudentEmail = /\w{2}.\w+@ecclesbourne.derbyshire.sch.uk/;
 
     // Creating the hash from the password
     const hash = bcrypt.hashSync(password);
@@ -85,7 +85,6 @@ app.post('/register', (req, res) => {
                 first_name: first_name,
                 last_name: last_name,
                 intake: intake,
-                class_id: 0,
                 // By default cannot post
                 can_post: false,
                 // By default has a private

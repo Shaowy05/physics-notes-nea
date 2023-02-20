@@ -11,6 +11,7 @@ import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
+import Alert from 'react-bootstrap/Alert';
 
 // The Account Card Component - A form for letting the user sign in and also register
 export default class AccountCard extends React.Component {
@@ -21,6 +22,14 @@ export default class AccountCard extends React.Component {
 
         // Creating the state
         this.state = {
+
+            // A property which determines whether or not the user has just registered
+            // an account, in which case a notification should appear.
+            justRegistered: false,
+
+            // A property which notifies the component if the user has just failed to
+            // register, in which case a notification should appear.
+            failedToRegister: false,
 
             // For both sign in and register
             inputEmail: '',
@@ -34,6 +43,12 @@ export default class AccountCard extends React.Component {
         }
 
     }
+
+    // Upon registration, change the state of justRegistered
+    updateJustRegistered = () => this.setState({ justRegistered: true });
+
+    // Upon failure to register, change the state of failedToRegister
+    updateFailedToRegister = () => this.setState({ failedToRegister: true });
 
     // Methods to update the state during user input
     updateInputEmail = (event) => {
@@ -74,21 +89,29 @@ export default class AccountCard extends React.Component {
 
     // Registering the user on form submit
     registerUser = (event) => {
-        // NOTE: SIMPLY PASSING INFO TO APP.JS FOR NOW
-
         // Destructuring the state
         const { inputEmail, inputPassword, inputFirstName, inputLastName, inputIntake } = this.state
 
-        // INSERT STUDENT INTO DATABASE HERE
-
-        // Loading the user into App's state
-        this.props.loadUser({
-            id: '1',
-            firstName: inputFirstName,
-            lastName: inputLastName,
-            schoolEmail: inputEmail,
-            role: 'student',
-            intake: inputIntake
+        fetch('http://localhost:3000/register', {
+            method: 'post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: inputEmail,
+                password: inputPassword,
+                first_name: inputFirstName,
+                last_name: inputLastName,
+                intake: inputIntake
+            })
+        })
+        .then(response => response.json())
+        .then(successObject => {
+            if (successObject.success) {
+                this.setState({ justRegistered: true });
+                this.props.changeRoute('signin');
+            }
+            else {
+                
+            }
         })
 
         // Changing route to index
@@ -108,6 +131,7 @@ export default class AccountCard extends React.Component {
         // Returning the Account Card
         return (
             <div className="AccountCard">
+                <Alert variant='success'>Successfully Registered New User - Please Sign In</Alert>
                 <Container>
                     <Row className="vh-90 d-flex justify-content-center">
                     <Col md={8} lg={6} xs={12}>
