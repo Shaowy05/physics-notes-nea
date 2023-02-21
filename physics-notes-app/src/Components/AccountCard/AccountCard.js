@@ -80,7 +80,6 @@ export default class AccountCard extends React.Component {
 
             if (userObject.success !== undefined) {
                 this.setState({ failedToSignIn: true });
-                console.log(userObject.message);
             }
 
             else {
@@ -137,6 +136,7 @@ export default class AccountCard extends React.Component {
         })
         .then(response => response.json())
         .then(successObject => {
+            console.log(successObject);
             if (successObject.success) {
                 this.props.changeRoute('signin');
             }

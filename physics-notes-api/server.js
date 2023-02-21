@@ -75,11 +75,14 @@ app.post('/logins', (req, res) => {
         res.json({ success: false, message: 'Email did not match valid format - Is it an Ecclesbourne email?' })
     }
 
-    db.select('*').from(tableNames[0]).where('email', '=', email)
+    console.log(tableNames, fieldName);
+
+    db.select('*').from(tableNames[0]).where('email', '=', email.toLowerCase())
         .then(data => {
 
             if (data.length !== 1) {
                 res.json({ success: false, message: 'Email was not recognised - Do you have an account?' });
+                return null;
             }
 
             if (bcrypt.compareSync(password, data[0].hash)) {
@@ -89,6 +92,7 @@ app.post('/logins', (req, res) => {
             }
             else {
                 res.json({ success: false, message: 'Email or Password Incorrect - Please Try Again.' })
+                return null;
             }
         })
         .catch(err => res.json('Failure to get items from database'));
