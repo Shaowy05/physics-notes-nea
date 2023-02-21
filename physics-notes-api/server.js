@@ -49,11 +49,49 @@ app.get('/folders', (req, res) => {
 
 });
 
-// Route - /login
+// Route - /logins
 // POST Requests
-app.post('/login', (req, res) => {
+app.post('/logins', (req, res) => {
 
+    const { email, password } = req.body;
 
+    const reStudentEmail = /\w{2}\.\w+@ecclesbourne.derbyshire.sch.uk/;
+    const reTeacherEmail = /\w+@ecclesbourne.derbyshire.sch.uk/;
+
+    const tableNames = [];
+    let fieldName; 
+
+    if (reStudentEmail.test(email.toLowerCase())) {
+        tableNames.push('logins');
+        tableNames.push('users');
+        fieldName = 'user_id';
+    }
+    else if (reTeacherEmail.test(email.toLowerCase())){
+        tableNames.push('teacher_logins');
+        tableNames.push('teachers');
+        fieldName = 'teacher_id';
+    }
+    else {
+        res.json({ success: false, message: 'Email did not match valid format - Is it an Ecclesbourne email?' })
+    }
+
+    db.select('*').from(tableNames[0]).where('email', '=', email)
+        .then(data => {
+
+            if (data.length !== 1) {
+                res.json({ success: false, message: 'Email was not recognised - Do you have an account?' });
+            }
+
+            if (bcrypt.compareSync(password, data[0].hash)) {
+                return db.select('*').from(tableNames[1]).where(fieldName, '=', Object.values(data[0])[3])
+                    .then(userObject => res.json(userObject[0]))
+                    .catch(err => res.status(400).json('Failure to get user from table'));
+            }
+            else {
+                res.json({ success: false, message: 'Email or Password Incorrect - Please Try Again.' })
+            }
+        })
+        .catch(err => res.json('Failure to get items from database'));
 
 })
 
@@ -143,7 +181,7 @@ app.post('/register', (req, res) => {
     }
     // Else the email is invalid, then we send an error code
     else {
-        res.json({success: false});
+        res.json({success: false, message: 'Invalid Email Format'});
         // Return out of the function
         return null;
     }

@@ -16,9 +16,6 @@ import TopicTable from "./Components/TopicTable/TopicTable";
 // Importing React Bootstrap Components
 import Container from "react-bootstrap/esm/Container";
 
-import Tree from "./Logic/Tree/Tree";
-import TreeNode from "./Logic/Tree/TreeNode";
-
 /* // Importing Pages
 import SignIn from "./Pages/SignIn/SignIn";
 import Index from './Pages/Index/Index';
@@ -55,14 +52,15 @@ export default class App extends React.Component {
                 // Personal details
                 firstName: '',
                 lastName: '',
-                schoolEmail: '',
 
-                // The Role property - determines the level of access
-                // this user has.
-                role: '',
+                // Whether or not the user can post notes
+                canPost: false,
 
                 // Year of intake into Ecclesbourne
-                intake: ''
+                intake: '',
+
+                // Whether or not the current user is private
+                private: true
             }
         }
     }

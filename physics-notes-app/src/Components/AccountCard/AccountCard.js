@@ -23,13 +23,13 @@ export default class AccountCard extends React.Component {
         // Creating the state
         this.state = {
 
-            // A property which determines whether or not the user has just registered
-            // an account, in which case a notification should appear.
-            justRegistered: false,
-
             // A property which notifies the component if the user has just failed to
             // register, in which case a notification should appear.
             failedToRegister: false,
+
+            // A property which notifies the component if the user has just failed to 
+            // sign in, so that a notification appears.
+            failedToSignIn: false,
 
             // For both sign in and register
             inputEmail: '',
@@ -43,12 +43,6 @@ export default class AccountCard extends React.Component {
         }
 
     }
-
-    // Upon registration, change the state of justRegistered
-    updateJustRegistered = () => this.setState({ justRegistered: true });
-
-    // Upon failure to register, change the state of failedToRegister
-    updateFailedToRegister = () => this.setState({ failedToRegister: true });
 
     // Methods to update the state during user input
     updateInputEmail = (event) => {
@@ -68,9 +62,46 @@ export default class AccountCard extends React.Component {
     }
 
     // Validating the user on form submit
-    validateUser = (event) => {
-        //NOTE: USING 'john@hotmail.com' AND 'pass' AS TEMPLATE INFO
-        if (this.state.inputEmail === 'kl.jdoe@ecclesbourne.derbyshire.sch.uk' && this.state.inputPassword === '91389') {
+    validateUser = event => {
+
+        const { inputEmail, inputPassword } = this.state;
+
+        fetch('http://localhost:3000/logins', {
+            method: 'post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: inputEmail,
+                password: inputPassword
+            })
+        })
+        .then(response => response.json())
+        .then(userObject => {
+            console.log(userObject);
+
+            if (userObject.success !== undefined) {
+                this.setState({ failedToSignIn: true });
+                console.log(userObject.message);
+            }
+
+            else {
+                const userObjectValues = Object.values(userObject);
+
+                this.props.loadUser({
+                    id: userObjectValues[0],
+                    firstName: userObjectValues[1],
+                    lastName: userObjectValues[2],
+                    intake: userObjectValues[3],
+                    canPost: userObjectValues[4],
+                    private: userObjectValues[5]
+                })
+
+                return this.props.changeRoute('index');
+
+            }
+        })
+        .catch(err => console.log(err));
+
+       /*  if (this.state.inputEmail === 'kl.jdoe@ecclesbourne.derbyshire.sch.uk' && this.state.inputPassword === '91389') {
             this.props.loadUser({
                 id: '1',
                 firstName: 'John',
@@ -84,11 +115,12 @@ export default class AccountCard extends React.Component {
         else {
             console.log('Incorrect Credentials');
             return null
-        }
+        } */
+
     }
 
     // Registering the user on form submit
-    registerUser = (event) => {
+    registerUser = event => {
         // Destructuring the state
         const { inputEmail, inputPassword, inputFirstName, inputLastName, inputIntake } = this.state
 
@@ -106,17 +138,13 @@ export default class AccountCard extends React.Component {
         .then(response => response.json())
         .then(successObject => {
             if (successObject.success) {
-                this.setState({ justRegistered: true });
                 this.props.changeRoute('signin');
             }
             else {
-                
+                this.setState({ failedToRegister: true });
             }
         })
-
-        // Changing route to index
-        return this.props.changeRoute('index');
-
+        .catch(err => console.log('Failure during registration'))
     }
 
     // Render Method for AccountCard
@@ -128,15 +156,26 @@ export default class AccountCard extends React.Component {
         // Destructuring props for easier access
         const { type, changeRoute } = this.props;
 
+        // Destructuring the state
+        const { failedToRegister, failedToSignIn } = this.state;
+
         // Returning the Account Card
         return (
             <div className="AccountCard">
-                <Alert variant='success'>Successfully Registered New User - Please Sign In</Alert>
+
                 <Container>
                     <Row className="vh-90 d-flex justify-content-center">
                     <Col md={8} lg={6} xs={12}>
                         <Card className="shadow">
                         <Card.Body>
+                            {
+                                failedToRegister &&
+                                <Alert variant='danger'>Failed to Register New User - Please make sure that the email is registered with the school</Alert>
+                            }
+                            {
+                                failedToSignIn &&
+                                <Alert variant='danger'>Failed to Sign In - Are your Credentials correct? </Alert>
+                            }
                             <div className="mb-3 mt-md-4">
                             <h2 className="fw-bold mb-2 text-uppercase ">{ 
                                 // Changing the Card title based off the route
@@ -197,13 +236,10 @@ export default class AccountCard extends React.Component {
                                         type === 'signin'
                                         ? this.validateUser
                                         : this.registerUser
-                                    } variant="primary" type="submit">
+                                    } variant="primary">
                                     { type === 'signin' ? 'Sign In' : 'Register'}
                                     </Button>
                                 </div>
-                                {
-                                    // Adding other details if the user is logging in
-                                }
                                 </Form>
                                 { 
                                     // Adjusting the link based off of the current route
