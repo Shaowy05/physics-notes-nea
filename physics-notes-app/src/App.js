@@ -12,6 +12,7 @@ import NavigationBar from './Components/NavigationBar/NavigationBar';
 
 import AccountCard from "./Components/AccountCard/AccountCard";
 import TopicTable from "./Components/TopicTable/TopicTable";
+import AddNotesCard from "./Components/AddNotesCard/AddNotesCard";
 
 // Importing React Bootstrap Components
 import Container from "react-bootstrap/esm/Container";
@@ -36,6 +37,9 @@ export default class App extends React.Component {
         // Creating the state for our App
         this.state = {
             
+            // A property for the current folder
+            currentFolder: null,
+
             // Routing properties
             // Route is 'signin' by default
             route: 'signin',
@@ -75,13 +79,18 @@ export default class App extends React.Component {
     loadUser = user => {
         return this.setState({ signedIn: true, user: user }, () => console.log(this.state));
     }
+
+    // A method allowing components to update the current folder
+    updateCurrentFolder = folder => {
+        return this.setState({ currentFolder: folder });
+    }
     
     // Render method for App
     render() {
 
         // Destructuring the state into variables for easier
         // access
-        const { route, signedIn, user } = this.state;
+        const { route, signedIn, user, currentFolder } = this.state;
 
         // Returning the App Component
         // An if statement to decide what to return
@@ -101,7 +110,7 @@ export default class App extends React.Component {
                 <div>
                     <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
                     <Container>
-                        <TopicTable />
+                        <TopicTable changeRoute={this.changeRoute} updateCurrentFolder={this.updateCurrentFolder} />
                     </Container>
                 </div>
             );
@@ -120,7 +129,16 @@ export default class App extends React.Component {
         else if (route === 'notes') {
 
         }
-        
+
+        else if (route === 'add-notes') {
+            return(
+                <div>
+                    <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
+                    <AddNotesCard currentFolder={currentFolder} currentUser={user} />
+                </div>
+            );
+        }
+
         // Profile route
         else if (route === 'profile') {
 

@@ -3,6 +3,7 @@ import './TopicTable.css';
 
 // Importing React Bootstrap Components
 import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
 
 // Importing the TreeNode class from logic
 import TreeNode from "../../Logic/Tree/TreeNode";
@@ -247,6 +248,10 @@ export default class TopicTable extends React.Component {
                             }
                         </tbody>
                     </Table>
+                    <Button variant="success" onClick={() => {
+                            this.props.updateCurrentFolder(folderPathStack.top());
+                            this.props.changeRoute('add-notes');
+                        }}>Add Notes</Button>
                 </div>
             );
         }
