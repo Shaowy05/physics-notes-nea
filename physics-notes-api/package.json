@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Shaowy05/physics-notes-nea#readme",
   "dependencies": {
+    "base64-img": "^1.0.4",
     "bcrypt-nodejs": "^0.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",

@@ -17,6 +17,7 @@ import FolderPath from "../FolderPath/FolderPath";
 import FolderRow from "../FolderRow/FolderRow";
 import FilterCard from "../FilterCard/FilterCard";
 import Tag from "../../Logic/Tag";
+import Teacher from "../../Logic/Teacher";
 
 export default class TopicTable extends React.Component {
 
@@ -248,10 +249,13 @@ export default class TopicTable extends React.Component {
                             }
                         </tbody>
                     </Table>
-                    <Button variant="success" onClick={() => {
-                            this.props.updateCurrentFolder(folderPathStack.top());
-                            this.props.changeRoute('add-notes');
+                    {
+                        (this.props.currentUser.canPost || this.props.currentUser instanceof Teacher) &&
+                        <Button variant="success" onClick={() => {
+                                this.props.updateCurrentFolder(folderPathStack.top());
+                                this.props.changeRoute('add-notes');
                         }}>Add Notes</Button>
+                    }
                 </div>
             );
         }

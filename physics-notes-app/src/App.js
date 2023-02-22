@@ -40,6 +40,9 @@ export default class App extends React.Component {
             // A property for the current folder
             currentFolder: null,
 
+            // A property for the folder array
+            folderArray: null,
+
             // Routing properties
             // Route is 'signin' by default
             route: 'signin',
@@ -48,24 +51,7 @@ export default class App extends React.Component {
             signedIn: false,
 
             // Creating the User object to store info about the user
-            user: {
-
-                // Unique id
-                id: '',
-
-                // Personal details
-                firstName: '',
-                lastName: '',
-
-                // Whether or not the user can post notes
-                canPost: false,
-
-                // Year of intake into Ecclesbourne
-                intake: '',
-
-                // Whether or not the current user is private
-                private: true
-            }
+            user: null
         }
     }
 
@@ -84,13 +70,18 @@ export default class App extends React.Component {
     updateCurrentFolder = folder => {
         return this.setState({ currentFolder: folder });
     }
+
+    // A method to update the folder array in the state
+    updateFolderArray = folderArray => {
+        return this.setState({ folderArray: folderArray });
+    }
     
     // Render method for App
     render() {
 
         // Destructuring the state into variables for easier
         // access
-        const { route, signedIn, user, currentFolder } = this.state;
+        const { route, signedIn, user, currentFolder, folderArray } = this.state;
 
         // Returning the App Component
         // An if statement to decide what to return
@@ -110,7 +101,7 @@ export default class App extends React.Component {
                 <div>
                     <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
                     <Container>
-                        <TopicTable changeRoute={this.changeRoute} updateCurrentFolder={this.updateCurrentFolder} />
+                        <TopicTable changeRoute={this.changeRoute} updateCurrentFolder={this.updateCurrentFolder} currentUser={user} />
                     </Container>
                 </div>
             );
@@ -134,7 +125,7 @@ export default class App extends React.Component {
             return(
                 <div>
                     <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
-                    <AddNotesCard currentFolder={currentFolder} currentUser={user} />
+                    <AddNotesCard currentFolder={currentFolder} currentUser={user} changeRoute={this.changeRoute} folderArray={folderArray} />
                 </div>
             );
         }

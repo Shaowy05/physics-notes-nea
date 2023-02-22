@@ -12,6 +12,8 @@ import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
+import User from '../../Logic/User';
+import Teacher from '../../Logic/Teacher';
 
 // The Account Card Component - A form for letting the user sign in and also register
 export default class AccountCard extends React.Component {
@@ -76,7 +78,8 @@ export default class AccountCard extends React.Component {
         })
         .then(response => response.json())
         .then(userObject => {
-            console.log(userObject);
+
+            let user;
 
             if (userObject.success !== undefined) {
                 this.setState({ failedToSignIn: true });
@@ -85,14 +88,36 @@ export default class AccountCard extends React.Component {
             else {
                 const userObjectValues = Object.values(userObject);
 
-                this.props.loadUser({
-                    id: userObjectValues[0],
-                    firstName: userObjectValues[1],
-                    lastName: userObjectValues[2],
-                    intake: userObjectValues[3],
-                    canPost: userObjectValues[4],
-                    private: userObjectValues[5]
-                })
+                // Using these regex strings to find out which type of user they are based on their
+                // email.
+                const reStudentEmail = /\w{2}\.\w+@ecclesbourne.derbyshire.sch.uk/;
+                const reTeacherEmail = /\w+@ecclesbourne.derbyshire.sch.uk/;
+
+                if (reStudentEmail.test(inputEmail)) {
+                    user = new User(
+                        userObjectValues[0],
+                        userObjectValues[1],
+                        userObjectValues[2],
+                        userObjectValues[4],
+                        userObjectValues[3],
+                        userObjectValues[5]
+                    );
+                }
+                else if (reTeacherEmail.test(inputEmail)) {
+                    user = new Teacher(
+                        userObjectValues[0],
+                        userObjectValues[1],
+                        userObjectValues[2],
+                        userObjectValues[3],
+                        userObjectValues[4],
+                        userObjectValues[5]
+                    );
+                }
+                else {
+                    throw new Error('Invalid email passed regex checks in backend');
+                }
+
+                this.props.loadUser(user);
 
                 return this.props.changeRoute('index');
 
