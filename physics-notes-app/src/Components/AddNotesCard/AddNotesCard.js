@@ -1,5 +1,7 @@
 import React from "react";
 
+import Alert from 'react-bootstrap/Alert';
+
 import './AddNotesCard.css';
 
 export default class AddNotesCard extends React.Component {
@@ -34,7 +36,6 @@ export default class AddNotesCard extends React.Component {
 
         reader.onload = async () => {
             const base64Notes = reader.result;
-            console.log(base64Notes);
             fetch('http://localhost:3000/notes', {
                 method: 'post',
                 headers: {'Content-Type': 'application/json'},
@@ -45,12 +46,64 @@ export default class AddNotesCard extends React.Component {
                     folderId: this.props.currentFolder.id
                 }) 
             })
-            .then(response => this.props.changeRoute('index'))
+            .then(response => response.json())
+            .then(message => {
+                if (message.success) {
+                    fetch('http://localhost:3000/users/num-of-posts', {
+                        method: 'put',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            userId: this.props.currentUser.id
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(message => {
+                        console.log(message)
+                        if (message.success) {
+                            this.props.currentUser.updateNumOfPosts(message.numOfPosts);
+                            this.updateFolderHasNotes(this.props.currentFolder.id);
+                            this.props.changeRoute('index');
+                        }
+                    })
+                    .catch(err => console.log(err, 'Failed to update users post count'));
+                }
+                else {
+                    this.setState({ failedToUpload: true });
+                }
+            })
             .catch(err => {
                 console.log(err);
                 this.setState({ failedToUpload: true });
             });
         }
+
+    }
+
+    // This function will recursively update the current folder, and all of its
+    // parent folders' has_notes field in the database.
+    updateFolderHasNotes = folderId => {
+
+        // Base Case - If the ID of the folder passed in is the root
+        // folder, then we should stop.
+        if (folderId === 0) {
+            return null;
+        }
+
+        fetch('http://localhost:3000/folders/has-notes', {
+            method: 'put',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                folderId: folderId,
+                hasNotes: true
+            })
+        })
+        .then(response => response.json())
+        .then(message => {
+            if (message.success) {
+                this.updateFolderHasNotes(message.parentFolderId)
+            }
+        })
+        .catch(err => console.log(err));
 
     }
 
@@ -67,6 +120,12 @@ export default class AddNotesCard extends React.Component {
                     <div className="card bg-dark text-white" style={{ borderRadius: '1rem' }} >
                         <div className="card-body p-5 text-center">
                         <div className="mb-md-2 mt-md-3 pb-5">
+
+                            {
+                                this.state.failedToUpload &&
+                                <Alert variant={'danger'}>Failed to Upload Notes</Alert>
+                            }
+
                             <h2 className="fw-bold mb-2 text-uppercase">Add Notes</h2>
 
                             <p className="text-white-50 mb-2">Add Notes to</p>

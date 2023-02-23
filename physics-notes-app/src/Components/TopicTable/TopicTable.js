@@ -29,6 +29,8 @@ export default class TopicTable extends React.Component {
         initialPathStack.push(rootFolder);
         
         this.state = {
+            
+
             folderArray: new FolderArray([rootFolder]),
             folderDirectoryTree: new Tree(new TreeNode(0)),
             folderPathStack: initialPathStack,

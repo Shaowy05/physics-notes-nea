@@ -53,6 +53,20 @@ app.get('/folders', (req, res) => {
 
 });
 
+// PUT Requests
+// Route for updating whether or not the folder has notes
+app.put('/folders/has-notes', (req, res) => {
+
+    const { folderId, hasNotes } = req.body;   
+
+    db('folders').where('folder_id', '=', folderId)
+        .update({ 'has_notes': hasNotes })
+        .returning('*')
+        .then(data => res.json({ parentFolderId: data[0].parent_folder_id, success: true }))
+        .catch(err => res.status(400).json('Error occurred while trying to update folders'));
+
+})
+
 // Route - /logins
 // POST Requests
 app.post('/logins', (req, res) => {
@@ -224,6 +238,25 @@ app.get('/tags/:id', (req, res) => {
         .and('folder_to_tag.folder_id', '=', folderId)
         .then(data => res.json(data))
         .catch(console.log);
+
+})
+
+// Route - /users
+// PUT Requests
+
+// Route for incrementing the number of posts the user has
+app.put('/users/num-of-posts', (req, res) => {
+
+    const { userId } = req.body;
+
+    db('users').where('user_id', '=', userId)
+        .increment('num_of_posts', 1)
+        .returning('num_of_posts')
+        .then(numOfPosts => res.json({
+            numOfPosts: numOfPosts[0].num_of_posts,
+            success: true
+        }))
+        .catch(err => res.status(400).json({ success: false }));
 
 })
 
