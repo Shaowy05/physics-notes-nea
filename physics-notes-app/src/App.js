@@ -13,6 +13,7 @@ import NavigationBar from './Components/NavigationBar/NavigationBar';
 import AccountCard from "./Components/AccountCard/AccountCard";
 import TopicTable from "./Components/TopicTable/TopicTable";
 import AddNotesCard from "./Components/AddNotesCard/AddNotesCard";
+import NoteCard from "./Components/NoteCard/NoteCard";
 
 // Importing React Bootstrap Components
 import Container from "react-bootstrap/esm/Container";
@@ -36,6 +37,9 @@ export default class App extends React.Component {
 
         // Creating the state for our App
         this.state = {
+
+            // A property for the current note
+            currentNote: null,
             
             // A property for the current folder
             currentFolder: null,
@@ -72,16 +76,16 @@ export default class App extends React.Component {
     }
 
     // A method to update the folder array in the state
-    updateFolderArray = folderArray => {
-        return this.setState({ folderArray: folderArray });
-    }
+    updateFolderArray = folderArray => this.setState({ folderArray: folderArray });
+
+    updateCurrentNote = note => this.setState({ currentNote: note });
     
     // Render method for App
     render() {
 
         // Destructuring the state into variables for easier
         // access
-        const { route, signedIn, user, currentFolder, folderArray } = this.state;
+        const { route, signedIn, user, currentFolder, folderArray, currentNote } = this.state;
 
         // Returning the App Component
         // An if statement to decide what to return
@@ -101,7 +105,12 @@ export default class App extends React.Component {
                 <div>
                     <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
                     <Container>
-                        <TopicTable changeRoute={this.changeRoute} updateCurrentFolder={this.updateCurrentFolder} currentUser={user} />
+                        <TopicTable
+                            changeRoute={this.changeRoute}
+                            updateCurrentFolder={this.updateCurrentFolder}
+                            updateCurrentNote={this.updateCurrentNote}
+                            currentUser={user} 
+                        />
                     </Container>
                 </div>
             );
@@ -118,7 +127,12 @@ export default class App extends React.Component {
 
         // Notes route
         else if (route === 'notes') {
-
+            return(
+                <div>
+                    <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
+                    <NoteCard note={currentNote} />
+                </div>
+            );
         }
 
         else if (route === 'add-notes') {
@@ -132,16 +146,6 @@ export default class App extends React.Component {
 
         // Profile route
         else if (route === 'profile') {
-
-        }
-
-        // Messaging route
-        else if (route === 'messaging') {
-
-        }
-
-        // Forum route
-        else if (route === 'forum') {
 
         }
 

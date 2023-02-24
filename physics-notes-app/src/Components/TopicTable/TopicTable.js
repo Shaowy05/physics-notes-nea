@@ -18,6 +18,8 @@ import FolderRow from "../FolderRow/FolderRow";
 import FilterCard from "../FilterCard/FilterCard";
 import Tag from "../../Logic/Tag";
 import Teacher from "../../Logic/Teacher";
+import Note from "../../Logic/Note";
+import NoteArray from "../../Logic/NoteArray";
 
 export default class TopicTable extends React.Component {
 
@@ -30,6 +32,7 @@ export default class TopicTable extends React.Component {
         
         this.state = {
             
+            notes: new NoteArray(),
 
             folderArray: new FolderArray([rootFolder]),
             folderDirectoryTree: new Tree(new TreeNode(0)),
@@ -147,6 +150,30 @@ export default class TopicTable extends React.Component {
 
     }
 
+    getNotes = folder => {
+        fetch(`http://localhost:3000/notes/folder-id=${folder.id}`)
+            .then(response => response.json())
+            .then(data => {
+
+                console.log(data);
+                const notes = new NoteArray();
+
+                data.forEach(noteObject => {
+                    notes.addNote(new Note(
+                        noteObject.note_id,
+                        noteObject.note_path,
+                        noteObject.note_name,
+                        noteObject.author_id,
+                        noteObject.folder_id
+                    ))
+                })
+
+                this.setState({ notes: notes });
+
+            })
+
+    }
+
     goToParentFolder = () => {
         this.setState(state => {
             const tempStack = state.folderPathStack;
@@ -154,7 +181,7 @@ export default class TopicTable extends React.Component {
             return {
                 folderPathStack: tempStack
             };
-        })
+        }, () => this.getNotes(this.state.folderPathStack.top()));
     }
 
     goToSelectedFolder = folder => {
@@ -164,7 +191,19 @@ export default class TopicTable extends React.Component {
             return {
                 folderPathStack: tempStack
             }
-        })
+        }, () => this.getNotes(this.state.folderPathStack.top()));
+    }
+
+    goToNotesPage = event => {
+
+        console.log(event.target);
+
+        this.props.updateCurrentNote(
+            this.state.notes.binSearch(event.target.id)
+        );
+
+        this.props.changeRoute('notes');
+
     }
 
     updateSearch = event => this.setState({ searchBarText: event.target.value });
@@ -186,7 +225,7 @@ export default class TopicTable extends React.Component {
     // Render method for TopicTable
     render() {
 
-        const { folderArray, folderDirectoryTree, folderPathStack, tags } = this.state;
+        const { notes, folderArray, folderPathStack, tags } = this.state;
 
         const folders = folderArray.getFolders(this.state);
 
@@ -238,6 +277,19 @@ export default class TopicTable extends React.Component {
                                     <td colSpan={4}>Return</td>
                                 </tr>
                             }
+
+                            {
+                                notes.getNotes().map((note, i) => {
+                                    return (
+                                        <tr key={i}>
+                                            <td colSpan={2}>{note.name}</td>
+                                            <td id={note.id} onClick={this.goToNotesPage}>View</td>
+                                            <td>notes</td>
+                                        </tr>
+                                    );
+                                })
+                            }
+
                             {
                                 folders.map((childFolder, i) => {
                                     return (

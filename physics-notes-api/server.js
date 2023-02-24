@@ -274,6 +274,30 @@ app.get('/folder-to-tag', (req, res) => {
 })
 
 // Route - /notes
+// GET Requests
+
+// Route for getting a specific note using the note ID
+app.get('/notes/note-id=:noteId', (req, res) => {
+
+    const { noteId } = req.params;
+
+    db.select('*').from('notes').where('note_id', '=', noteId)
+        .then(note => res.json(note))
+        .catch(err => res.status(400).json({ success: false, message: 'Unable to get notes from database' }));
+
+})
+
+// Route for getting notes based off a parent folder
+app.get('/notes/folder-id=:folderId', (req, res) => {
+
+    const { folderId } = req.params;
+
+    db.select('*').from('notes').where('folder_id', '=', folderId)
+        .then(data => res.json(data))
+        .catch(err => res.status(400).json({ success: false, message: 'Error while trying to retrieve notes' }));
+
+})
+
 // POST Requests
 // Route for adding notes
 app.post('/notes', (req, res) => {
@@ -287,11 +311,11 @@ app.post('/notes', (req, res) => {
         folderId
     } = req.body;
 
-    const imageFile = base64Img.imgSync(notes, './notes/', fileName);
+    base64Img.imgSync(notes, './notes/', fileName);
 
     db.transaction(trx => {
         trx.insert({
-            note_path: `./notes/${fileName}.jpg`,
+            note_path: `${process.env.API_PATH}/notes/${fileName}.jpg`,
             note_name: noteName,
             author_id: authorId,
             folder_id: folderId
@@ -301,7 +325,7 @@ app.post('/notes', (req, res) => {
         .then(res.json({ success: true }))
         .catch(trx.rollback);
     })
-    .catch(err => res.json({ success: false }));
+    .catch(err => res.status(400).json({ success: false }));
 
 })
 
