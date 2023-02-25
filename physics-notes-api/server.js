@@ -242,6 +242,19 @@ app.get('/tags/:id', (req, res) => {
 })
 
 // Route - /users
+// GET Requests
+
+// Route for getting a specific user
+app.get('/users/:userId', (req, res) => {
+
+    const { userId } = req.params;
+
+    db.select('*').from('users').where('user_id' ,'=', userId)
+        .then(data => res.json({ success: true, user: data[0] }))
+        .catch(err => res.status(400).json({ success: false, message: 'Failed to get user' }))
+
+})
+
 // PUT Requests
 
 // Route for incrementing the number of posts the user has
@@ -276,7 +289,7 @@ app.get('/folder-to-tag', (req, res) => {
 // Route - /notes
 // GET Requests
 
-// Route for getting a specific note using the note ID
+// Route for getting a specific note using the note ID, does not send over the image URL
 app.get('/notes/note-id=:noteId', (req, res) => {
 
     const { noteId } = req.params;
@@ -287,7 +300,21 @@ app.get('/notes/note-id=:noteId', (req, res) => {
 
 })
 
-// Route for getting notes based off a parent folder
+// Route for getting the image of the notes using the given ID.
+app.get('/notes/image/:noteId', (req, res) => {
+    const { noteId } = req.params;
+    
+    db.select('note_path').from('notes').where('note_id', '=', noteId)
+        .then(data => {
+            const imageUrl = base64Img.base64Sync(data[0].note_path);
+            res.json({ success: true, imageUrl: imageUrl });
+        })
+        .catch(err => res.status(400).json({ success: false, message: 'Failed to get image for notes' }));
+
+})
+
+// Route for getting notes based off a parent folder, doesn't send over the image URL to save
+// some time when sending data
 app.get('/notes/folder-id=:folderId', (req, res) => {
 
     const { folderId } = req.params;

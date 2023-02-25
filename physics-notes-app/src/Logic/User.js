@@ -22,4 +22,6 @@ export default class User {
         return this.isPrivate;
     }
 
+    getFullName = () => `${this.firstName} ${this.lastName}`;
+
 }

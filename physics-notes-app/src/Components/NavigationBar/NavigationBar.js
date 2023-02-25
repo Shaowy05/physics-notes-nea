@@ -34,8 +34,8 @@ export default class NavigationBar extends React.Component {
                                 // If the user is signed in display regular Navigation Bar
                                 signedIn === true ?
                                     <Nav className="me-auto">
-                                        <Nav.Link>Index</Nav.Link>
-                                        <Nav.Link className="justify-content-end">
+                                        <Nav.Link onClick={() => changeRoute('index')}>Index</Nav.Link>
+                                        <Nav.Link className="justify-content-end" onClick={() => changeRoute('profile')}>
                                             <span className="material-symbols-outlined">
                                                 account_circle
                                             </span>

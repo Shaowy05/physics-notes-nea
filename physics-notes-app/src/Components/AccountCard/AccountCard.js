@@ -125,22 +125,6 @@ export default class AccountCard extends React.Component {
         })
         .catch(err => console.log(err));
 
-       /*  if (this.state.inputEmail === 'kl.jdoe@ecclesbourne.derbyshire.sch.uk' && this.state.inputPassword === '91389') {
-            this.props.loadUser({
-                id: '1',
-                firstName: 'John',
-                lastName: 'Doe',
-                schoolEmail: 'kl.jdoe@ecclesbourne.derbyshire.sch.uk',
-                role: 'student',
-                intake: '2016'
-            })
-            return this.props.changeRoute('index');
-        }
-        else {
-            console.log('Incorrect Credentials');
-            return null
-        } */
-
     }
 
     // Registering the user on form submit

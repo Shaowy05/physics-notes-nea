@@ -71,9 +71,7 @@ export default class App extends React.Component {
     }
 
     // A method allowing components to update the current folder
-    updateCurrentFolder = folder => {
-        return this.setState({ currentFolder: folder });
-    }
+    updateCurrentFolder = folder => this.setState({ currentFolder: folder });
 
     // A method to update the folder array in the state
     updateFolderArray = folderArray => this.setState({ folderArray: folderArray });
@@ -130,7 +128,7 @@ export default class App extends React.Component {
             return(
                 <div>
                     <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
-                    <NoteCard note={currentNote} />
+                    <NoteCard note={currentNote} parentFolder={currentFolder} />
                 </div>
             );
         }

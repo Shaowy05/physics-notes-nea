@@ -155,7 +155,6 @@ export default class TopicTable extends React.Component {
             .then(response => response.json())
             .then(data => {
 
-                console.log(data);
                 const notes = new NoteArray();
 
                 data.forEach(noteObject => {
@@ -196,7 +195,7 @@ export default class TopicTable extends React.Component {
 
     goToNotesPage = event => {
 
-        console.log(event.target);
+        this.props.updateCurrentFolder(this.state.folderPathStack.top());
 
         this.props.updateCurrentNote(
             this.state.notes.binSearch(event.target.id)

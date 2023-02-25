@@ -45,7 +45,7 @@ export default class FilterCard extends React.Component {
                         }}
                     >
                         <p id="filter-card-header-text">Filters</p>
-                        </Card.Header>
+                    </Card.Header>
                     <Collapse in={open}>
                         <div id="collapsible">
                             <div id="filters">
