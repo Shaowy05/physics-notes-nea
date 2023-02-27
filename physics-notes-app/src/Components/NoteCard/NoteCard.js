@@ -8,6 +8,7 @@ import Col from 'react-bootstrap/Col';
 import User from '../../Logic/User';
 
 import './NoteCard.css';
+import ForumCard from '../ForumCard/ForumCard';
 
 export default class NoteCard extends React.Component {
     
@@ -107,6 +108,9 @@ export default class NoteCard extends React.Component {
                                     }
                                     To {parentFolder.title}
                                     </Card.Text>
+
+                                    <ForumCard parentNote={note} />
+
                                 </Card.Body>
                             </Card>
                         </Col>

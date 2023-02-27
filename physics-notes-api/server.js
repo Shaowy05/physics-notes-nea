@@ -275,7 +275,6 @@ app.put('/users/num-of-posts', (req, res) => {
 
 // Route - /folder-to-tag
 // GET Requests
-
 // Route for getting all the relations
 app.get('/folder-to-tag', (req, res) => {
 
@@ -288,7 +287,6 @@ app.get('/folder-to-tag', (req, res) => {
 
 // Route - /notes
 // GET Requests
-
 // Route for getting a specific note using the note ID, does not send over the image URL
 app.get('/notes/note-id=:noteId', (req, res) => {
 
@@ -355,6 +353,32 @@ app.post('/notes', (req, res) => {
     .catch(err => res.status(400).json({ success: false }));
 
 })
+
+// Route - /questions
+// GET Requests
+// Route for getting questions using the parent note ID
+app.get('/questions/note-id=:noteId', (req, res) => {
+
+    const { noteId } = req.params;
+
+    db.select('*').from('questions').where('note_id', '=', noteId)
+        .then(data => res.json({ success: true, questions: data }))
+        .catch(err => res.status(400).json({ success: false, message: err }));
+
+});
+
+// Route - /responses
+// GET Requests
+// Route for getting responses using the parent question ID
+app.get('/responses/question-id=:questionId', (req, res) => {
+
+    const { questionId } = req.params;
+
+    db.select('*').from('responses').where('question_id', '=', questionId)
+        .then(data => res.json({ success: true, responses: data }))
+        .catch(err => res.status(400).json({ success: false, message: err }));
+
+});
 
 // Finally telling the app to listen on port 3000
 app.listen(3000, () => {
