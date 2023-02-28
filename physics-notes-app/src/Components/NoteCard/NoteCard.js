@@ -12,8 +12,8 @@ import ForumCard from '../ForumCard/ForumCard';
 
 export default class NoteCard extends React.Component {
     
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
         this.state = {
             imageUrl: null,
@@ -72,7 +72,7 @@ export default class NoteCard extends React.Component {
 
     render() {
 
-        const { note, parentFolder } = this.props;
+        const { note, parentFolder, currentUser } = this.props;
         const { author, imageUrl } = this.state;
 
         if (imageUrl === null || author === null) {
@@ -85,7 +85,6 @@ export default class NoteCard extends React.Component {
         }
 
         else {
-            console.log(author.isPrivate)
             return(
                 <div>
                     <Container>
@@ -99,7 +98,7 @@ export default class NoteCard extends React.Component {
                             <Card>
                                 <Card.Header>Information</Card.Header>
                                 <Card.Body>
-                                    <Card.Text>
+                                    <Card.Text style={{ marginBottom: '5px' }}>
                                     {
                                         (!author.isPrivate) ?
                                             `Posted By ${author.getFullName()} `
@@ -108,8 +107,12 @@ export default class NoteCard extends React.Component {
                                     }
                                     To {parentFolder.title}
                                     </Card.Text>
+                                    <Card.Text style={{ marginBottom: '5px' }}>
+                                        Title - {note.name}
+                                    </Card.Text>
 
-                                    <ForumCard parentNote={note} />
+                                    <Card.Subtitle>Forum - </Card.Subtitle>
+                                    <ForumCard parentNote={note} currentUser={currentUser} />
 
                                 </Card.Body>
                             </Card>

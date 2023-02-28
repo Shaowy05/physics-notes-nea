@@ -367,6 +367,40 @@ app.get('/questions/note-id=:noteId', (req, res) => {
 
 });
 
+// POST Requests
+// Route for posting questions to the database
+app.post('/questions', (req, res) => {
+
+    const currentDate = new Date();
+    const isoDate = `${currentDate.toISOString().split('T')[0]}`;
+
+    const {
+        questionTitle,
+        questionText,
+        authorId,
+        noteId,
+    } = req.body;
+
+    db.transaction(trx => {
+        trx.insert({
+            question_title: questionTitle,
+            question_text: questionText,
+            author_id: authorId,
+            note_id: noteId,
+            upload_date: isoDate
+        })
+        .into('questions')
+        .then(trx.commit)
+        .then(res.json({ success: true }))
+        .catch(trx.rollback)
+    })
+    .catch(err => res.status(400).json({
+        success: false,
+        message: 'Failed to add question to database'
+    }))
+
+})
+
 // Route - /responses
 // GET Requests
 // Route for getting responses using the parent question ID

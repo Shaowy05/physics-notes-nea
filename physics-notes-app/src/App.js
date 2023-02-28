@@ -128,7 +128,7 @@ export default class App extends React.Component {
             return(
                 <div>
                     <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
-                    <NoteCard note={currentNote} parentFolder={currentFolder} />
+                    <NoteCard note={currentNote} parentFolder={currentFolder} currentUser={user} />
                 </div>
             );
         }

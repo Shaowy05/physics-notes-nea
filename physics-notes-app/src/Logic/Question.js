@@ -12,4 +12,6 @@ export default class Question {
 
     addResponse = response => this.responses.push(response);
 
+    hasResponses = () => this.responses.length === 0 ? false : true;
+
 }
