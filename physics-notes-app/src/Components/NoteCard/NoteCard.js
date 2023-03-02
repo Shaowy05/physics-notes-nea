@@ -4,11 +4,12 @@ import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
 
 import User from '../../Logic/User';
+import ForumCard from '../ForumCard/ForumCard';
 
 import './NoteCard.css';
-import ForumCard from '../ForumCard/ForumCard';
 
 export default class NoteCard extends React.Component {
     
@@ -17,7 +18,9 @@ export default class NoteCard extends React.Component {
 
         this.state = {
             imageUrl: null,
-            author: null
+            author: null,
+
+            showForum: false
         }
 
     }
@@ -73,7 +76,7 @@ export default class NoteCard extends React.Component {
     render() {
 
         const { note, parentFolder, currentUser } = this.props;
-        const { author, imageUrl } = this.state;
+        const { author, imageUrl, showForum } = this.state;
 
         if (imageUrl === null || author === null) {
             return(
@@ -111,8 +114,16 @@ export default class NoteCard extends React.Component {
                                         Title - {note.name}
                                     </Card.Text>
 
-                                    <Card.Subtitle>Forum - </Card.Subtitle>
-                                    <ForumCard parentNote={note} currentUser={currentUser} />
+                                    {
+                                        showForum ?
+                                        <div>
+                                            <Card.Subtitle>Forum - </Card.Subtitle>
+                                            <ForumCard parentNote={note} currentUser={currentUser} />
+                                        </div>
+                                        :
+                                        <Button variant='danger' onClick={() => this.setState({ showForum: true })}>Show Forum</Button>
+                                    }
+
 
                                 </Card.Body>
                             </Card>

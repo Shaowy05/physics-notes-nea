@@ -414,6 +414,96 @@ app.get('/responses/question-id=:questionId', (req, res) => {
 
 });
 
+// POST Requests
+// Route for adding a response to the database
+app.post('/responses', (req, res) => {
+
+    const {
+        responseText,
+        authorId,
+        questionId,
+    } = req.body;
+
+    db.transaction(trx => {
+        trx.insert({
+            response_text: responseText,
+            author_id: authorId,
+            question_id: questionId,
+            is_solution: false,
+            upvotes: 0,
+            downvotes: 0
+        })
+        .into('responses')
+        .then(trx.commit)
+        .then(res.json({ success: true }))
+        .catch(trx.rollback)
+    })
+    .catch(err => res.status(400).json({ success: false, message: err }))
+
+})
+
+// PUT Requests
+// Route for incrementing or decrementing the upvotes/downvotes value
+app.put('/responses/vote', (req, res) => {
+    const { responseId, field, option } = req.params
+
+    if (option === 'increment') {
+        db('responses').where('response_id', '=', responseId)
+            .increment(field, 1)
+            .then(res.json({ success: true }))
+            .catch(err => res.status(400).json({ 
+                success: false,
+                message: err
+             }))
+    }
+
+    else if (option === 'decrement') {
+        db('responses').where('response_id', '=', responseId)
+            .decrement(field, 1)
+            .then(res.json({ success: true }))
+            .catch(err => res.status(400).json({ 
+                success: false,
+                message: err
+             }))
+    }
+
+    else {
+        res.status(400).json({ success: false, message: 'Invalid option parameter' });
+    }
+
+})
+
+// Route - /votes
+// GET Requests
+// Route for getting the IDs of responses that the user has voted on
+app.get('/votes/:userId', (req, res) => {
+
+    const { userId } = req.params;
+
+    const upvoteIds = db.select('response_id').from('upvotes')
+        .where('user_id', '=', userId)
+        .catch(err => console.log(err));
+
+    const downvoteIds = db.select('response_id').from('downvotes')
+        .where('user_id', '=', userId)
+        .catch(err => console.log(err));
+
+    Promise.all([upvoteIds, downvoteIds])
+        .then(votes => {
+            const [upvoteIds, downvoteIds] = votes;
+            res.json({
+                success: true,
+                upvoteIds: upvoteIds,
+                downvoteIds: downvoteIds
+            });
+        })
+        .catch(err => res.status(400).json({
+            success: false,
+            message: err
+        }));
+
+}) 
+
 // Finally telling the app to listen on port 3000
 app.listen(3000, () => {
     console.log('App is listening on port 3000');

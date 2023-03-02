@@ -12,6 +12,7 @@ import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
+
 import User from '../../Logic/User';
 import Teacher from '../../Logic/Teacher';
 
@@ -117,14 +118,36 @@ export default class AccountCard extends React.Component {
                     throw new Error('Invalid email passed regex checks in backend');
                 }
 
-                this.props.loadUser(user);
+/*                 this.props.loadUser(user);
 
-                return this.props.changeRoute('index');
+                return this.props.changeRoute('index'); */
 
+                return new Promise((resolve, reject) => {
+                    resolve(user);
+                    reject('Failed to fetch user from database');
+                })
+            }
+        })
+        .then(user => {
+            if (user instanceof User) {
+                fetch(`http://localhost:3000/votes/${user.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error('Failed to get votes for user');
+                    }
+
+                    data.upvoteIds.forEach(upvoteId => user.updateUpvoteResponseIds(upvoteId));
+                    data.downvoteIds.forEach(downvoteId => user.updateDownvoteResponseIds(downvoteId));
+
+                    this.props.loadUser(user);
+
+                    return this.props.changeRoute('index');
+
+                })
             }
         })
         .catch(err => console.log(err));
-
     }
 
     // Registering the user on form submit

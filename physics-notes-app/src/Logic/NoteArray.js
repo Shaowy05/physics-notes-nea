@@ -1,4 +1,5 @@
 import mergeSort from "./Algorithms/MergeSort";
+import binarySearch from "./Algorithms/BinarySearch";
 
 export default class NoteArray {
 
@@ -34,34 +35,18 @@ export default class NoteArray {
 
     }
 
-    // Here we implement the iterative version of Binary Search
-    // as it is less space intensive than the recursive version.
-    binSearch = noteId => {
-        const notes = this.notes;
+    getNoteById = noteId => {
 
+        const notes = this.notes;
         const orderedNotes = this.sortNotes(notes);
 
-        let left = 0;
-        let right = orderedNotes.length - 1;
-        let middle = null;
+        const idArray = [];
 
-        while (left <= right) {
+        orderedNotes.forEach(note => idArray.push(note.id));
 
-            middle = Math.floor((left + right) / 2);
+        const noteIndex = binarySearch(idArray, noteId);
 
-            if (orderedNotes[middle].id < noteId) {
-                left = middle + 1;
-            }
-            else if (orderedNotes[middle].id > noteId) {
-                right = middle - 1;
-            }
-            else {
-                return orderedNotes[middle];
-            }
-
-        }
-
-        return Error('ID not found in note array');
+        return (noteIndex !== false) ? orderedNotes[noteIndex] : false; 
 
     }
 

@@ -12,8 +12,8 @@ import './ForumCard.css';
 
 export default class ForumCard extends React.Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             questionArray: null,
             questionsFetched: false,
@@ -90,13 +90,14 @@ export default class ForumCard extends React.Component {
     render() {
 
         const { questionArray, questionsFetched, addingQuestion, failedToAddQuestion } = this.state;
+        const { currentUser } = this.props;
 
         if (questionsFetched) {
             return (
                 <div>
                     {
                         questionArray.map((question, i) => {
-                            return(<QuestionCard question={question} key={i} />);
+                            return(<QuestionCard question={question} key={i} currentUser={currentUser} />);
                         })
                     }
                     {
@@ -119,7 +120,7 @@ export default class ForumCard extends React.Component {
                             </div>
                             {
                                 failedToAddQuestion &&
-                                <Alert variant={'danger'}>Failed to add </Alert>
+                                <Alert variant={'danger'}>Failed to add</Alert>
                             }
                         </Card>
                     }
