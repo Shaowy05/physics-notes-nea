@@ -198,7 +198,7 @@ export default class TopicTable extends React.Component {
         this.props.updateCurrentFolder(this.state.folderPathStack.top());
 
         this.props.updateCurrentNote(
-            this.state.notes.binSearch(event.target.id)
+            this.state.notes.getNoteById(event.target.id)
         );
 
         this.props.changeRoute('notes');

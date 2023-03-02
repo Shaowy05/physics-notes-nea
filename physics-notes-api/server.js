@@ -93,8 +93,6 @@ app.post('/logins', (req, res) => {
         res.json({ success: false, message: 'Email did not match valid format - Is it an Ecclesbourne email?' })
     }
 
-    console.log(tableNames, fieldName);
-
     db.select('*').from(tableNames[0]).where('email', '=', email.toLowerCase())
         .then(data => {
 
@@ -235,7 +233,7 @@ app.get('/tags/:id', (req, res) => {
     db.select('tags.tag_id', 'tag_name')
         .from('tags', 'folder_to_tag')
         .where('tags.tag_id', '=', 'folder_to_tag.tag_id')
-        .and('folder_to_tag.folder_id', '=', folderId)
+        .where('folder_to_tag.folder_id', '=', folderId)
         .then(data => res.json(data))
         .catch(console.log);
 
@@ -256,7 +254,6 @@ app.get('/users/:userId', (req, res) => {
 })
 
 // PUT Requests
-
 // Route for incrementing the number of posts the user has
 app.put('/users/num-of-posts', (req, res) => {
 
@@ -445,30 +442,30 @@ app.post('/responses', (req, res) => {
 // PUT Requests
 // Route for incrementing or decrementing the upvotes/downvotes value
 app.put('/responses/vote', (req, res) => {
-    const { responseId, field, option } = req.params
+    const { responseId, field, action } = req.body;
 
-    if (option === 'increment') {
+    if (action === 'increment') {
         db('responses').where('response_id', '=', responseId)
             .increment(field, 1)
             .then(res.json({ success: true }))
             .catch(err => res.status(400).json({ 
                 success: false,
                 message: err
-             }))
+             }));
     }
 
-    else if (option === 'decrement') {
+    else if (action === 'decrement') {
         db('responses').where('response_id', '=', responseId)
             .decrement(field, 1)
             .then(res.json({ success: true }))
             .catch(err => res.status(400).json({ 
                 success: false,
                 message: err
-             }))
+             }));
     }
 
     else {
-        res.status(400).json({ success: false, message: 'Invalid option parameter' });
+        res.status(400).json({ success: false, message: 'Invalid action parameter' });
     }
 
 })
@@ -503,6 +500,46 @@ app.get('/votes/:userId', (req, res) => {
         }));
 
 }) 
+
+// POST Requests
+// Route for adding a vote to either upvotes or downvotes
+app.post('/votes', (req, res) => {
+
+    const { userId, responseId, table } = req.body;
+
+    db.transaction(trx => {
+        trx.insert({
+            user_id: userId,
+            response_id: responseId
+        })
+        .into(table)
+        .then(trx.commit)
+        .then(res.json({ success: true }))
+        .catch(trx.rollback);
+    })
+    .catch(err => res.json({
+        success: false,
+        message: err
+    }));
+
+})
+
+// DELETE Requests
+// Route for deleting an entry from either upvotes/downvotes
+app.delete('/votes', (req, res) => {
+
+    const { userId, responseId, table } = req.body;
+
+    db(table).where('user_id', '=', userId)
+        .where('response_id', '=', responseId)
+        .del()
+        .then(res.json({ success: true }))
+        .catch(err => res.status(400).json({
+            success: false,
+            message: err
+        }));
+
+})
 
 // Finally telling the app to listen on port 3000
 app.listen(3000, () => {

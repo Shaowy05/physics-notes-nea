@@ -101,7 +101,8 @@ export default class AccountCard extends React.Component {
                         userObjectValues[2],
                         userObjectValues[4],
                         userObjectValues[3],
-                        userObjectValues[5]
+                        userObjectValues[5],
+                        userObjectValues[6]
                     );
                 }
                 else if (reTeacherEmail.test(inputEmail)) {

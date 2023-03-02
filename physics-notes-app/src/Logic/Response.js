@@ -15,4 +15,7 @@ export default class Response {
     getUpvoteColour = () => this.upvotedByCurrentUser ? 'green' : 'grey';
     getDownvoteColour = () => this.downVotedByCurrentUser ? 'red' : 'grey';
 
+    toggleUpvoted = () => this.upvotedByCurrentUser = !this.upvotedByCurrentUser;
+    toggleDownvoted = () => this.downVotedByCurrentUser = !this.downVotedByCurrentUser;
+
 }

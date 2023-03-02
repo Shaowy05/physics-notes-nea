@@ -8,6 +8,7 @@ import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
 
 import './QuestionCard.css';
+import ResponseCard from "../ResponseCard/ResponseCard";
 
 export default class QuestionCard extends React.Component {
 
@@ -27,25 +28,37 @@ export default class QuestionCard extends React.Component {
 
     updateResponseText = event => this.setState({ responseText: event.target.value })
 
-    updateUpvote = event => {
+    updateVote = event => {
 
         const { currentUser, question } = this.props;
 
-        const responseId = (event.target.id).split('-')[1];
+        const parsedTagId = event.target.split('-');
+
+        const table = parsedTagId[0];
+        const responseId = parsedTagId[1];
 
         const option = (question.getResponseById(responseId).upvotedByCurrentUser) ? 'decrement' : 'increment';
 
-        fetch('http://localhost:3000/responses/vote' , {
+        fetch('http://localhost:3000/responses/votes' , {
             method: 'put',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 responseId: responseId,
-                field: 'upvotes',
+                field: table,
                 option: option
             })
         })
 
-        // ADD FEATURE TO UPDATE USER TO RESPONSE TABLE
+        fetch('http://localhost:3000/votes', {
+            method: (option === 'increment') ? 'post' : 'delete',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                userId: currentUser.id,
+                responseId: responseId,
+                table: table
+            })
+        })
+
     }
 
     createResponse = () => {
@@ -94,8 +107,16 @@ export default class QuestionCard extends React.Component {
                 const tempQuestion = question;
                 data.responses.forEach(response => {
 
-                    const upvotedByCurrentUser = currentUser.getUpvoteResponseId(response.response_id);
-                    const downVotedByCurrentUser = currentUser.getDownvoteResponseId(response.response_id);
+                    let upvotedByCurrentUser = currentUser.getUpvoteResponseId(response.response_id);
+                    let downVotedByCurrentUser = currentUser.getDownvoteResponseId(response.response_id);
+
+                    if (upvotedByCurrentUser !== false) {
+                        upvotedByCurrentUser = true;
+                    }
+
+                    if (downVotedByCurrentUser !== false) {
+                        downVotedByCurrentUser = true;
+                    }
 
                     tempQuestion.addResponse(new Response(
                         response.response_id,
@@ -119,6 +140,7 @@ export default class QuestionCard extends React.Component {
     render() {
 
         const { question, creatingResponse, failedToCreateResponse } = this.state;
+        const { currentUser } = this.props;
 
         return (
             <div style={{ margin: '10px' }}>
@@ -148,26 +170,7 @@ export default class QuestionCard extends React.Component {
                     {
                         question.responses.map((response, i) => {
                             return (
-                                <div key={i}>
-                                <ListGroup.Item>
-                                    {response.text}
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <span className={'material-symbols-outlined'}>check</span>
-                                        {response.upvotes}
-                                        <span
-                                            className={'material-symbols-outlined'}
-                                            id={`upvote-${response.id}`}
-                                            style={{ color: response.getUpvoteColour() }}
-                                        >add</span>
-                                        {response.downvotes}
-                                        <span
-                                            className={'material-symbols-outlined'}
-                                            id={`downvote-${response.id}`}
-                                            style={{ color: response.getDownvoteColour() }}
-                                        >remove</span>
-                                    </div>
-                                </ListGroup.Item>
-                                </div>
+                                <ResponseCard response={response} currentUser={currentUser} key={i} />
                             );
                         })
                     }
