@@ -470,6 +470,23 @@ app.put('/responses/vote', (req, res) => {
 
 })
 
+// Route for updating whether or not a response is a solution
+app.put('/responses/is-solution', (req, res) => {
+
+    const { responseId, isSolution } = req.body;
+
+    db('responses').where('response_id', '=', responseId)
+        .update({ 'is_solution': isSolution })
+        .then(res.json({
+            success: true,
+        }))
+        .catch(err => res.status(400).json({
+            success: false,
+            message: err
+        }));
+
+})
+
 // Route - /votes
 // GET Requests
 // Route for getting the IDs of responses that the user has voted on

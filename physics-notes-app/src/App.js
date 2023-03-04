@@ -17,6 +17,7 @@ import NoteCard from "./Components/NoteCard/NoteCard";
 
 // Importing React Bootstrap Components
 import Container from "react-bootstrap/esm/Container";
+import ProfileCard from "./Components/ProfileCard/ProfileCard";
 
 /* // Importing Pages
 import SignIn from "./Pages/SignIn/SignIn";
@@ -144,7 +145,12 @@ export default class App extends React.Component {
 
         // Profile route
         else if (route === 'profile') {
-
+            return(
+                <div>
+                    <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
+                    <ProfileCard user={user} />
+                </div>
+            );
         }
 
         // Invalid route

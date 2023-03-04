@@ -52,4 +52,48 @@ export default class Question {
 
     }
 
+    getOrderedResponses = () => {
+
+        const responses = this.responses;
+        let ordered = [];
+
+        const solutions = [];
+        const notSolutions = [];
+
+        // First find if there is a solution, if so then add to the top.
+        responses.forEach(response => {
+            if (response.isSolution) {
+                solutions.push(response);
+            }
+            else {
+                notSolutions.push(response);
+            }
+        })
+
+        ordered = ordered.concat(solutions);
+
+        // Since it's very possible that two or more responses have
+        // the same response score, instead of storing responses in
+        // a singular key, we store an array instead.
+        const scoreToResponseObject = {}; 
+
+        notSolutions.forEach(response => {
+            const votingScore = response.getVotingScore()
+            if (scoreToResponseObject[votingScore] === undefined) {
+                scoreToResponseObject[votingScore] = [response];
+            }
+            else {
+                scoreToResponseObject[votingScore].push(response);
+            }
+        })
+
+        const orderedScores = mergeSort(Object.keys(scoreToResponseObject)).reverse(); 
+
+        orderedScores.forEach(score => {
+            ordered = ordered.concat(scoreToResponseObject[score]);
+        });
+
+        return ordered;
+    }
+
 }

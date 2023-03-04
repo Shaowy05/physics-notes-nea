@@ -137,9 +137,9 @@ export default class AccountCard extends React.Component {
                     if (!data.success) {
                         throw new Error('Failed to get votes for user');
                     }
-
-                    data.upvoteIds.forEach(upvoteId => user.updateUpvoteResponseIds(upvoteId));
-                    data.downvoteIds.forEach(downvoteId => user.updateDownvoteResponseIds(downvoteId));
+                    console.log(data)
+                    data.upvoteIds.forEach(upvoteId => user.updateUpvoteResponseIds(upvoteId.response_id));
+                    data.downvoteIds.forEach(downvoteId => user.updateDownvoteResponseIds(downvoteId.response_id));
 
                     this.props.loadUser(user);
 

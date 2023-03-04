@@ -142,6 +142,8 @@ export default class QuestionCard extends React.Component {
         const { question, creatingResponse, failedToCreateResponse } = this.state;
         const { currentUser } = this.props;
 
+        const orderedResponses = question.getOrderedResponses();
+
         return (
             <div style={{ margin: '10px' }}>
                 <Card border={'primary'}>
@@ -168,9 +170,9 @@ export default class QuestionCard extends React.Component {
                     }
 
                     {
-                        question.responses.map((response, i) => {
+                        orderedResponses.map((response, i) => {
                             return (
-                                <ResponseCard response={response} currentUser={currentUser} key={i} />
+                                <ResponseCard response={response} currentUser={currentUser} key={i} question={question} />
                             );
                         })
                     }

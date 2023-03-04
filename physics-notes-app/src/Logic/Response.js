@@ -12,10 +12,23 @@ export default class Response {
         this.downVotedByCurrentUser = downVotedByCurrentUser;
     }
 
-    getUpvoteColour = () => this.upvotedByCurrentUser ? 'green' : 'grey';
-    getDownvoteColour = () => this.downVotedByCurrentUser ? 'red' : 'grey';
+    getUpvoteColour = () => this.upvotedByCurrentUser ? 'lawngreen' : 'grey';
+    getDownvoteColour = () => this.downVotedByCurrentUser ? 'crimson' : 'grey';
+
+    getSolutionColour = () => this.isSolution ? 'lawngreen' : 'grey';
 
     toggleUpvoted = () => this.upvotedByCurrentUser = !this.upvotedByCurrentUser;
     toggleDownvoted = () => this.downVotedByCurrentUser = !this.downVotedByCurrentUser;
+
+    toggleIsSolution = () => this.isSolution = !this.isSolution;
+
+    getVotingScore = () => {
+
+        if (this.upvotes + this.downvotes === 0) {
+            return 0;
+        }
+
+        return (this.upvotes - this.downvotes) / (this.upvotes + this.downvotes);
+    }
 
 }

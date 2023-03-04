@@ -32,7 +32,6 @@ export default class ResponseCard extends React.Component {
             this.setState({ failedToUpdateVote: true });
             return null;
         }
-        console.log(action)
 
         const updateVotesInResponses = fetch('http://localhost:3000/responses/vote', {
             method: 'put',
@@ -78,27 +77,81 @@ export default class ResponseCard extends React.Component {
                     else {
                         tempResponse.toggleDownvoted();
                     }
-                    return { response: tempResponse };
+                    return { response: tempResponse, failedToUpdateVote: false };
+                }, () => {
+                    let newCount;
+
+                    const element = document.getElementById(`${table}-${response.id}`);
+                    newCount = parseInt(element.innerHTML);
+
+                    if (action === 'increment') {
+                        newCount += 1;
+                    } else {
+                        newCount -= 1;
+                    }
+
+                    console.log(newCount);
+
+                    element.innerHTML = newCount;
                 })
             })
+            .catch(err => this.setState({ failedToUpdateVote: true }));
+    }
+
+    markResponseAsSolution = () => {
+
+        const { currentUser } = this.state;
+        const { question } = this.props;
+
+        if (currentUser.id !== question.authorId) {
+            return null;
+        }
+
+        this.setState(state => {
+            const tempResponse = state.response;
+            tempResponse.toggleIsSolution();
+            return({ response: tempResponse });
+        }, () => {
+            const { response } = this.state;
+
+            fetch('http://localhost:3000/responses/is-solution', {
+                method: 'put',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    responseId: response.id,
+                    isSolution: response.isSolution
+                })
+            })
+            .catch(err => console.log(err));
+        })
+
+
     }
 
     render() {
 
-        const { response } = this.state;
+        const { response, currentUser } = this.state;
+        const { question } = this.props;
 
         return (
-            <ListGroup.Item>
+            <ListGroup.Item color={response.getSolutionColour()}>
                 {response.text}
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <span className={'material-symbols-outlined'}>check</span>
-                    {response.upvotes}
+                    {
+                        (question.authorId === currentUser.id || response.isSolution === true) &&
+                        <span
+                            className={'material-symbols-outlined'}
+                            style={{ color: response.getSolutionColour() }}
+                            onClick={() => this.markResponseAsSolution()}
+                        >check</span>
+                    }
+                    <div id={`upvotes-${response.id}`}>{response.upvotes}</div>
                     <span
                         className={'material-symbols-outlined'}
                         style={{ color: response.getUpvoteColour() }}
                         onClick={() => this.updateVote('upvotes')}
                     >add</span>
-                    {response.downvotes}
+                    <div id={`downvotes-${response.id}`}>{response.downvotes}</div>
                     <span
                         className={'material-symbols-outlined'}
                         style={{ color: response.getDownvoteColour() }}
