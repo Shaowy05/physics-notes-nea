@@ -320,6 +320,19 @@ app.get('/notes/folder-id=:folderId', (req, res) => {
 
 })
 
+// DELETE Requests
+// Route for deleting notes based off of their ID
+app.delete('/notes/:noteId', (req, res) => {
+
+    const { noteId } = req.params;
+
+    db('notes').where('note_id', '=', noteId)
+        .del()
+        .then(() => res.json({ success: true }))
+        .catch(err => res.status(400).json({ success: false, message: err }));
+
+})
+
 // POST Requests
 // Route for adding notes
 app.post('/notes', (req, res) => {

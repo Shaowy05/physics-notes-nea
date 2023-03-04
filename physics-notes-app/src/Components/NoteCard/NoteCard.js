@@ -5,6 +5,7 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
 
 import User from '../../Logic/User';
 import ForumCard from '../ForumCard/ForumCard';
@@ -20,7 +21,9 @@ export default class NoteCard extends React.Component {
             imageUrl: null,
             author: null,
 
-            showForum: false
+            showForum: false,
+
+            failedToDeleteNotes: false
         }
 
     }
@@ -46,7 +49,6 @@ export default class NoteCard extends React.Component {
         const getAuthor = fetch(`http://localhost:3000/users/${note.authorId}`)
             .then(response => response.json())
             .then(data => new Promise((resolve, reject) => {
-                console.log(data);
                 const author = new User(
                     data.user.user_id,
                     data.user.first_name,
@@ -73,10 +75,31 @@ export default class NoteCard extends React.Component {
 
     }
 
+    deleteNote = () => {
+
+        const { note, changeRoute } = this.props; 
+
+        fetch(`http://localhost:3000/notes/${note.id}`, {
+            method: 'delete'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                changeRoute('index');
+            }
+            else {
+                console.log(data.message)
+                this.setState({ failedToDeleteNotes: true });
+            }
+        })
+        .catch(err => this.setState({ failedToDeleteNotes: true }));
+
+    }
+
     render() {
 
         const { note, parentFolder, currentUser } = this.props;
-        const { author, imageUrl, showForum } = this.state;
+        const { author, imageUrl, showForum, failedToDeleteNotes } = this.state;
 
         if (imageUrl === null || author === null) {
             return(
@@ -96,6 +119,27 @@ export default class NoteCard extends React.Component {
                             <Card className={'shadow'}>
                                 <Card.Img src={imageUrl} />
                             </Card>
+                            <a href={imageUrl} download={`${note.name}.jpg`}>
+                                <Button style={{
+                                    marginBottom: '10px'
+                                }}>Download Notes</Button>
+                            </a>
+                            {
+                                author.id === currentUser.id &&
+                                <Button
+                                    variant={'danger'}
+                                    style={{ marginBottom: '10px', marginInline: '5px' }}
+                                    onClick={() => this.deleteNote()}
+                                >Delete Notes</Button>
+                            }
+                            {
+                                failedToDeleteNotes &&
+                                <Alert variant={'danger'}
+                                    style={{ marginBottom: '10px' }} 
+                                >
+                                    Failed To Delete Notes
+                                </Alert>
+                            }
                         </Col>
                         <Col>
                             <Card>

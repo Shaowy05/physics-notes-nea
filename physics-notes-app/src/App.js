@@ -19,15 +19,6 @@ import NoteCard from "./Components/NoteCard/NoteCard";
 import Container from "react-bootstrap/esm/Container";
 import ProfileCard from "./Components/ProfileCard/ProfileCard";
 
-/* // Importing Pages
-import SignIn from "./Pages/SignIn/SignIn";
-import Index from './Pages/Index/Index';
-import Register from "./Pages/Register/Register";
-import Profile from "./Pages/Profile/Profile";
-import Notes from "./Pages/Notes/Notes";
-import Messaging from "./Pages/Messaging/Messaging";
-import Forum from "./Pages/Forum/Forum"; */
-
 // The App React Component - Container for all other components 
 export default class App extends React.Component {
 
@@ -68,7 +59,7 @@ export default class App extends React.Component {
 
     // loadUser method lets the signin and register routes load user
     loadUser = user => {
-        return this.setState({ signedIn: true, user: user }, () => console.log(this.state));
+        return this.setState({ signedIn: true, user: user });
     }
 
     // A method allowing components to update the current folder
@@ -129,7 +120,7 @@ export default class App extends React.Component {
             return(
                 <div>
                     <NavigationBar signedIn={signedIn} changeRoute={this.changeRoute} />
-                    <NoteCard note={currentNote} parentFolder={currentFolder} currentUser={user} />
+                    <NoteCard note={currentNote} parentFolder={currentFolder} currentUser={user} changeRoute={this.changeRoute} />
                 </div>
             );
         }

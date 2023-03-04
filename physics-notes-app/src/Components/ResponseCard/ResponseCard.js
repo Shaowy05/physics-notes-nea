@@ -135,7 +135,7 @@ export default class ResponseCard extends React.Component {
 
         return (
             <ListGroup.Item color={response.getSolutionColour()}>
-                {response.text}
+                <p dangerouslySetInnerHTML={{__html: response.text}} />
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     {
                         (question.authorId === currentUser.id || response.isSolution === true) &&
