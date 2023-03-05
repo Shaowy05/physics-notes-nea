@@ -2,7 +2,7 @@ import binarySearch from "./Algorithms/BinarySearch";
 
 export default class User {
 
-    constructor(id, fn, ln, canPost, intake, isPrivate, numOfPosts, upvoteResponseIds=[], downvoteResponseIds=[]) {
+    constructor(id, fn, ln, canPost, intake, isPrivate, upvoteResponseIds=[], downvoteResponseIds=[]) {
 
         this.id = id;
         this.firstName = fn;
@@ -10,20 +10,9 @@ export default class User {
         this.canPost = canPost;
         this.intake = intake;
         this.isPrivate = isPrivate;
-        this.numOfPosts = numOfPosts;
         this.upvoteResponseIds = upvoteResponseIds;
         this.downvoteResponseIds = downvoteResponseIds;
 
-    }
-
-    updateNumOfPosts = nOP => this.numOfPosts = nOP;
-
-    updateIsPrivate = iP => {
-        if (this.isPrivate !== iP) {
-            this.isPrivate = iP;
-        }
-
-        return this.isPrivate;
     }
 
     updateUpvoteResponseIds = id => this.upvoteResponseIds.push(id);

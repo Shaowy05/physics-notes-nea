@@ -253,20 +253,87 @@ app.get('/users/:userId', (req, res) => {
 
 })
 
-// PUT Requests
-// Route for incrementing the number of posts the user has
-app.put('/users/num-of-posts', (req, res) => {
+app.put('/users', (req, res) => {
 
-    const { userId } = req.body;
+    const {
+        userId,
+        firstName,
+        lastName,
+        intake,
+        isPrivate
+    } = req.body;
 
     db('users').where('user_id', '=', userId)
-        .increment('num_of_posts', 1)
-        .returning('num_of_posts')
-        .then(numOfPosts => res.json({
-            numOfPosts: numOfPosts[0].num_of_posts,
+        .update({ 
+            first_name: firstName,
+            last_name: lastName,
+            intake: intake,
+            private: isPrivate
+        })
+        .then(() => res.json({
             success: true
         }))
-        .catch(err => res.status(400).json({ success: false }));
+        .catch(err => res.status(400).json({
+            success: false,
+            message: err
+        }));
+
+})
+
+// Route - /tests
+// GET Requests
+// Route for getting all the tests using user ID
+app.get('/tests/:userId', (req, res) => {
+
+    const { userId } = req.params;
+
+    db.select('*').from('tests').where('user_id', '=', userId)
+        .then(data => res.json({
+            success: true,
+            testObjects: data
+        }))
+        .catch(err => res.status(400).json({
+            success: false,
+            message: err
+        }));
+
+})
+
+// POST Requests
+// Route for adding a test to the database
+app.post('/tests', (req, res) => {
+
+    const {
+        userId,
+        testName,
+        testDate,
+        attainedScore,
+        maxScore
+    } = req.body;
+
+    db.transaction(trx => {
+        trx.insert({
+            test_name: testName,
+            user_id: userId,
+            test_date: testDate,
+            attained_score: attainedScore,
+            max_score: maxScore
+        })
+        .into('tests')
+        .returning('*')
+        .then(testObject => {
+            res.json({
+                success: true,
+                testObject: testObject
+            })
+        })
+        .then(trx.commit)
+        .catch(trx.rollback)
+    })
+    .catch(err => res.status(400).json({
+        success: false,
+        message: err
+    }));
 
 })
 

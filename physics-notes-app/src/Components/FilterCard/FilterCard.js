@@ -29,7 +29,7 @@ export default class FilterCard extends React.Component {
         // The different ways to order the folders, stored in an array.
         // This allows for us to use the .map function to more efficiently
         // display the radio checkboxes.
-        const orderByOptions = ["Number", "Title", "Posts", "Difficulty", "Answers"];
+        const orderByOptions = ["Number", "Title"];
 
         return(
             <div>

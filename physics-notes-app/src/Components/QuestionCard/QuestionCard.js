@@ -148,7 +148,8 @@ export default class QuestionCard extends React.Component {
             <div style={{ margin: '10px' }}>
                 <Card border={'primary'}>
                 <Card.Body>
-                    <Card.Subtitle>{question.title}</Card.Subtitle>
+                    <Card.Title>{question.title}</Card.Title>
+                    <Card.Subtitle>{question.uploadDate.split('T')[0]}</Card.Subtitle>
                     <Card.Text>{question.text}</Card.Text>
                     
                     <span className={'material-symbols-outlined'} id={'reply-icon'} onClick={() => this.setState({ creatingResponse: true })}>reply</span>

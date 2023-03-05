@@ -101,8 +101,7 @@ export default class AccountCard extends React.Component {
                         userObjectValues[2],
                         userObjectValues[4],
                         userObjectValues[3],
-                        userObjectValues[5],
-                        userObjectValues[6]
+                        userObjectValues[5]
                     );
                 }
                 else if (reTeacherEmail.test(inputEmail)) {
@@ -118,10 +117,6 @@ export default class AccountCard extends React.Component {
                 else {
                     throw new Error('Invalid email passed regex checks in backend');
                 }
-
-/*                 this.props.loadUser(user);
-
-                return this.props.changeRoute('index'); */
 
                 return new Promise((resolve, reject) => {
                     resolve(user);
