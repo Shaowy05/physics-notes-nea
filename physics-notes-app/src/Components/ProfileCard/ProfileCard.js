@@ -1,5 +1,9 @@
 import React from "react";
 
+import { Chart as ChartJS } from 'chart.js/auto'
+import { Chart } from 'react-chartjs-2'
+import { Line } from 'react-chartjs-2'
+
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -31,6 +35,17 @@ export default class ProfileCard extends React.Component {
 
             testsFetched: false,
             tests: [],
+            graphData: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Tests',
+                        backgroundColor: '#d3d3d3',
+                        data: []
+                    }
+                ]
+            },
+            graphDataReady: true,
 
             addingTest: false,
             failedToAddTest: false,
@@ -78,7 +93,9 @@ export default class ProfileCard extends React.Component {
                         );
                     })
 
-                    this.setState({ tests: testArray, testsFetched: true });
+                    this.setState({ tests: testArray, testsFetched: true }, () => {
+                        this.createGraph(testArray);
+                    });
 
                 }
             })
@@ -161,7 +178,7 @@ export default class ProfileCard extends React.Component {
             else {
                 this.setState(state => {
 
-                    const testObject = data.testObject;
+                    const testObject = data.testObject[0];
                     const newTest = new Test(
                         testObject.test_id,
                         testObject.test_name,
@@ -172,6 +189,8 @@ export default class ProfileCard extends React.Component {
                     );
 
                     const tempTestArray = state.tests.concat([newTest]);
+
+                    this.createGraph(tempTestArray);
 
                     return({
                         tests: tempTestArray,
@@ -187,6 +206,31 @@ export default class ProfileCard extends React.Component {
 
     }
 
+    createGraph = tests => {
+        this.setState(state => {
+
+            const orderedTests = tests.sort((test1, test2) => test1.testDate - test2.testDate);
+            console.log(orderedTests)
+
+            const dates = orderedTests.map(test => test.getParsedDate())
+            const percentages = orderedTests.map(test => test.getRoundedPercentage());
+
+            return ({
+                graphData: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Tests',
+                            backgroundColor: '#d3d3d3',
+                            data: percentages 
+                        }
+                    ]
+                }
+            })
+
+        })
+    }
+
     render() {
 
         const { user } = this.props;
@@ -196,14 +240,17 @@ export default class ProfileCard extends React.Component {
             tests,
             testsFetched,
             addingTest,
-            failedToAddTest
+            failedToAddTest,
+            graphDataReady,
+            graphData
         } = this.state;
         const currentDate = new Date();
 
-        console.log(tests)
-
         return (
             <div>
+                <script
+                    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+                </script>
                 <Container>
                     <Row className={'d-flex justify-content-center'}>
                     <Col md={8} lg={8} xs={12}>
@@ -241,7 +288,7 @@ export default class ProfileCard extends React.Component {
                                     :
                                     <div>
                                         <Card.Title>Tests and Assessments</Card.Title>
-                                        <Table>
+                                        <Table responsive='md'>
                                             <thead>
                                                 <tr>
                                                     <th>Name</th>
@@ -286,7 +333,7 @@ export default class ProfileCard extends React.Component {
                                                 <FormGroup>
                                                 <input onChange={this.updateAddTestMaxScore} type={'number'} min={0} />
                                                 </FormGroup>
-                                                <Button onClick={() => this.addTest()}
+                                                <Button onClick={this.addTest}
                                                     variant={'success'}
                                                     style={{ marginTop: '5px' }} 
                                                 >Submit</Button>
@@ -296,9 +343,31 @@ export default class ProfileCard extends React.Component {
                                                 >Cancel</Button>
                                                 {
                                                     failedToAddTest &&
-                                                    <Alert variant={'danger'} style={{ marginTop: '5px'}}>Failed To Add Test</Alert>
+                                                    <Alert variant={'danger'} style={{ marginTop: '5px' }}>Failed To Add Test</Alert>
                                                 }
                                             </Card>
+                                        }
+                                        <Card.Title>Graph of Performance</Card.Title>
+                                        {
+                                            graphDataReady &&
+                                            <Line
+                                                data={graphData}
+                                                options={{
+                                                    scales: {
+                                                        y: {
+                                                           max: 100,
+                                                           min: 0,
+                                                           ticks: {
+                                                            stepSize: 5
+                                                           }
+                                                        }
+                                                    }
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%'
+                                                }}
+                                            />
                                         }
                                     </div>
                                 }
