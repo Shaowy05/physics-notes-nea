@@ -1,26 +1,56 @@
-// Importing dotenv to use environment variables
+// In order to connect to the postgres database there are a few constants needed
+// to connect. For security reasons, during development these are commonly stored as
+// environment variables within a .env file rather than in the source code itself.
+// This means that people reading the code cannot access the private information, and
+// there is no way to access these confidential variables during deployment. In order
+// to access these variables, I have used the 'dotenv' library that comes with Node.js.
+// Here is a brief rundown of the contents of .env:
+// 1. DB_USERNAME - The username used with the Postgres database.
+// 2. DB_PASSWORD - The password used with the Postgres database.
+// 3. DB_NAME - The name of the database.
+// 4. API_PATH - This is the path of the root folder for the API, this value here is used
+//               later on to store the images in the 'notes' folder.
+// After importing the 'dotenv' library, we run the .config() method to connect the .env
+// file.
 import * as dotenv from 'dotenv';
 dotenv.config()
 
-// Importing Express to use as our server framework
-import express, { response } from 'express';
+// Here we import the 'express' library to be used as the framework for creating our
+// RESTful API.
+import express from 'express';
 
-// Importing Cors to allow for Postman
+// Here we import 'cors'. Cors is a library containing the cors middleware component.
+// Cors is needed to allow for our frontend and backend to communicate securely.
+// A common vulnerability of websites is something called 'cross origin http requests', where
+// an unknown sender requests data from an API. To prevent this, Express by default prevents
+// requests from unknown origins, and using cors allows for my frontend on port 3001 communicate
+// with port 3000.
 import cors from 'cors';
 
-// Importing database related libraries and setting
-// up the database connection
+// Knex is the technology discussed during the design phase as my selected library for
+// connecting the Postgres database to my API. Here we import the library so we can use it.
 import knex from 'knex';
 
-// Importing bcrypt to allow for hashing
+// Here we import bcrypt, the library I have chosen to handle password hashing and login
+// security.
 import bcrypt from 'bcrypt-nodejs';
 
-// Importing base64-img to handle storing the images in the database
+// Base64Img is a library designed to handle converting images into Base 64 URLs.
 import base64Img from 'base64-img';
 
+// We start the backend by initialising a connection to the database.
 const db = knex({
-    // Using Postgres
+    // Here we tell the knex app the type of database that we are using in the backend, here
+    // it's 'pg' meaning Postgres
     client: 'pg',
+    // The connection takes the form of a javascript object, in which we have the following
+    // properties:
+    // 1. Host - This is the IP of the device hosting the database, in this case it's just localhost
+    //           hence 127.0.0.1.
+    // 2. User - This is the Username associated with the database, stored in the .env file discussed
+    //           earlier, so we access it using the dotenv library imported at the start.
+    // 3. Password - The password that I set for the database, also stored in .env
+    // 4. Database - The name of the database knex is attaching to, also stored in .env.
     connection: {
         // Hosting the connection on localhost
         host: '127.0.0.1',
@@ -30,87 +60,167 @@ const db = knex({
     }
 });
 
-// Creating the express app
+// Initialising the express app in a constant called app.
 const app = express()
 
-// Setting up middleware
+// Here we set up middleware, which can be thought of as certain settings for the Express app.
+// The first one is 'cors', as discussed allows for HTTP origin validation. This is used not only for
+// allowing for my React app to connect but also other applications like Postman, which I am using to
+// test my API.
 app.use(cors());
+
+// The second is Express.json. This essentially allows Express to send and recieve data in the form
+// of JSON files, which is the way I have chosen to send data back and forth. We can also set a limit
+// to the amount of data that can come through in one go, which I have set to 5 Megabytes, higher than
+// usual, as sending the images over as a base 64 URL requires more data.
 app.use(express.json({ limit: '5mb' }));
+
+// Lastly we enable Express.urlencoded. This allows us to send and receive the images as Base 64 URLs.
 app.use(express.urlencoded({ limit: '5mb' }));
 
 // Splitting the different requests by route:
 
 // Route - /folders
 // GET Requests
+
+// This is the GET requests route for folders. This route will return all of the folders stored in the
+// folders table in the database, needed in the main index page of the React app to retrieve the sections
+// and topics.
 app.get('/folders', (req, res) => {
     
-    // SELECT * FROM tableName
+    // SELECT * FROM folders
     db.select('*').from('folders')
-        // Returns a Promise, after receiving info...
+        // Convert the data into JSON and send it as a response
         .then(data => res.json(data))
-        // Return an error message if unable to send response
+        // If there is an error, send a status 400 response with this message.
         .catch(err => res.status(400).json('Unable to retrieve data'))
 
 });
 
 // PUT Requests
-// Route for updating whether or not the folder has notes
+
+// This is a route for updating a particular record in the folders table, specifically in order to update
+// the has_notes field. This is used to change this property when a set of notes are added, or if a set
+// of notes is deleted.
 app.put('/folders/has-notes', (req, res) => {
 
+    // First we destructure the body of the request to give us the ID of the folder and what value we want
+    // to change the folder's has_notes property to.
     const { folderId, hasNotes } = req.body;   
 
+    // UPDATE folders SET has_notes = (hasNotes) WHERE folder_id = (folderId)
     db('folders').where('folder_id', '=', folderId)
         .update({ 'has_notes': hasNotes })
+        // After updating the folder, return the row.
         .returning('*')
+        // Upon completion, send a response with the parent ID of the folder which was just updated. This
+        // is explained in more detail in the React app later on but the TL;DR is that when a set of notes
+        // is added, we want to update all of the folders above it so that the parent folders also have
+        // a has_notes field of true. By returning the parent folder's ID we can recursively initiate PUT
+        // requests to update all of the folders.
         .then(data => res.json({ parentFolderId: data[0].parent_folder_id, success: true }))
+        // If there is an erro, send a status 400 with an error message.
         .catch(err => res.status(400).json('Error occurred while trying to update folders'));
 
 })
 
 // Route - /logins
 // POST Requests
+
+// There are no GET Requests for the logins table for security reasons mentioned in the design section. GET
+// requests cannot send over a body of JSON, meaning that security measures are harder to implement, so instead
+// we make them perform a POST request, containing some validation information and then the API decides whether
+// or not we should serve the user information back to them from the users table, not the logins table. It's
+// important to note that we never, at any point, send over information from the login table.
 app.post('/logins', (req, res) => {
 
+    // Destructuring the contents of the body of the request, i.e. the email and password.
     const { email, password } = req.body;
 
+    // User login details are stored in two different tables in the database as said in the design. The users table
+    // stores regular users, students essentially, and teachers are stored in a seperate table called teachers. In
+    // order to find out which one a user belongs to, we have to be able to differentiate the two. Fortunately, there
+    // is an easy way of doing so. Student's at Ecclesbourne school will always have 2 letters followed by a . and
+    // then @ecclesbourne.derbyhire.sch.uk, whereas teachers don't have the 2 letters or the . before the email suffix.
+    // This allows us to use regex to split the two. I have used Javascript's builtin regex string notation (with / around
+    // the regex expression) to achieve this. This method of validation is good, as it also serves as an easy way
+    // of stopping people not from Ecclesbourne from creating an account, as they will not have an ecclesbourne email.
     const reStudentEmail = /\w{2}\.\w+@ecclesbourne.derbyshire.sch.uk/;
     const reTeacherEmail = /\w+@ecclesbourne.derbyshire.sch.uk/;
 
+    // Here we create an array, this is to store the names of the table containing the login details and the user
+    // details. All this does is allow me to write a single SQL query rather than two, saving some time and also
+    // increasing the scalability of my API, in the event that I have to another table there is less work that I have
+    // to do.
     const tableNames = [];
+
+    // fieldName is just a variable, either user_id or teacher_id. This is used later to specify which field to use when
+    // finding the record corresponding to the email passed in the request.
     let fieldName; 
 
+    // Here we use the builtin .test method on the expressions we created earlier on to find out, what table names and
+    // what field name to add to the variables that we created. Using a conditional if statement, we can change the
+    // behaviour of our SQL query.
+    // If the email passed in matches the student's email format, then add 'logins' and 'users' to the tableNames array.
     if (reStudentEmail.test(email.toLowerCase())) {
         tableNames.push('logins');
         tableNames.push('users');
         fieldName = 'user_id';
     }
+    // If the email passed in matches the teacher's email format, then add 'teacher_logins' and 'teachers' to the tableNames
+    // array.
     else if (reTeacherEmail.test(email.toLowerCase())){
         tableNames.push('teacher_logins');
         tableNames.push('teachers');
         fieldName = 'teacher_id';
     }
+    // If the email matched neither, then it is an invalid email, so we send a response telling the sender that their
+    // request was unsuccessful and that their email did not match a valid format along with a question asking if their
+    // email was part of the Ecclesbourne school.
     else {
         res.json({ success: false, message: 'Email did not match valid format - Is it an Ecclesbourne email?' })
     }
 
+    // SELECT * FROM (tableNames[0], i.e. either 'logins' or 'teacher_logins) WHERE email = (lowercase version of email) 
     db.select('*').from(tableNames[0]).where('email', '=', email.toLowerCase())
+        // Once the data has been fetched
         .then(data => {
 
+            // If the number of records which matched the SQL condition is not 1, then there was no email which matched
+            // the email passed in the body, and so we send a response telling the user that the email was not recognised.
             if (data.length !== 1) {
                 res.json({ success: false, message: 'Email was not recognised - Do you have an account?' });
+                // Then we return null to escape out of the function.
                 return null;
             }
 
+            // Otherwise, the email was recognised and we now need to compare the password entered to the actual password.
+            // It is not secure to convert the original password to a hash and compare the hashes as plaintext, so instead
+            // we use the bcrypt library which we included to compare the hashes using their secure comparison algorithm.
             if (bcrypt.compareSync(password, data[0].hash)) {
+
+                // If the hashes match, then we can return the user information corresponding to the email passed in. For this
+                // we have to use the foreign key in the logins table to find the relevant user in the users table. Here
+                // Object.values(data[0])[3] is getting the integer which is the foreign key referencing the user_id field in
+                // the users table. We use Object.values to grab the 3rd value of the data object passed in from the select
+                // statement.
+                // SELECT * FROM (tableNames[1], i.e either users or teachers) WHERE (fieldName) = (foreign key integer)
                 return db.select('*').from(tableNames[1]).where(fieldName, '=', Object.values(data[0])[3])
+                    // Once the user information has been fetched, send a response with the data in it.
                     .then(userObject => res.json(userObject[0]))
+                    // If there was an error, then we send a status 400 with an error message.
                     .catch(err => res.status(400).json('Failure to get user from table'));
             }
+
+            // If the hashes did not match then we send a failure message back to the sender, telling them the password was
+            // wrong.
             else {
                 res.json({ success: false, message: 'Email or Password Incorrect - Please Try Again.' })
+                // Return null to escape out the function
                 return null;
             }
         })
+        // If knex could not make the query to the database then send an error message back to the sender.
         .catch(err => res.json('Failure to get items from database'));
 
 })
