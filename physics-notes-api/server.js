@@ -118,7 +118,17 @@ app.put('/folders/has-notes', (req, res) => {
         // is added, we want to update all of the folders above it so that the parent folders also have
         // a has_notes field of true. By returning the parent folder's ID we can recursively initiate PUT
         // requests to update all of the folders.
-        .then(data => res.json({ parentFolderId: data[0].parent_folder_id, success: true }))
+        .then(data => {
+            // If the number of folders returned is not 0, then that means that there was a folder of that
+            // folder ID and we can proceed to send the response. 
+            if (data.length !== 0) {
+                res.json({ parentFolderId: data[0].parent_folder_id, success: true });
+            }
+            // Otherwise there was no folder with that ID and we should let the user know.
+            else {
+                res.status(400).json(`No such folder with ID of ${folderId}`);
+            }
+        })
         // If there is an erro, send a status 400 with an error message.
         .catch(err => res.status(400).json('Error occurred while trying to update folders'));
 
@@ -127,84 +137,96 @@ app.put('/folders/has-notes', (req, res) => {
 // Route - /logins
 // POST Requests
 
-// There are no GET Requests for the logins table for security reasons mentioned in the design section. GET
-// requests cannot send over a body of JSON, meaning that security measures are harder to implement, so instead
-// we make them perform a POST request, containing some validation information and then the API decides whether
-// or not we should serve the user information back to them from the users table, not the logins table. It's
-// important to note that we never, at any point, send over information from the login table.
+// There are no GET Requests for the logins table for security reasons mentioned in the design section. 
+// GET requests cannot send over a body of JSON, meaning that security measures are harder to implement,
+// so instead requests cannot send over a body of JSON, meaning that security measures are harder to 
+// implement, so instead we make them perform a POST request, containing some validation information
+// and then the API decides whether or not we should serve the user information back to them from the
+// users table, not the logins table. It's important to note that we never, at any point, send over 
+// information from the login table.
 app.post('/logins', (req, res) => {
 
     // Destructuring the contents of the body of the request, i.e. the email and password.
     const { email, password } = req.body;
 
-    // User login details are stored in two different tables in the database as said in the design. The users table
-    // stores regular users, students essentially, and teachers are stored in a seperate table called teachers. In
-    // order to find out which one a user belongs to, we have to be able to differentiate the two. Fortunately, there
-    // is an easy way of doing so. Student's at Ecclesbourne school will always have 2 letters followed by a . and
-    // then @ecclesbourne.derbyhire.sch.uk, whereas teachers don't have the 2 letters or the . before the email suffix.
-    // This allows us to use regex to split the two. I have used Javascript's builtin regex string notation (with / around
-    // the regex expression) to achieve this. This method of validation is good, as it also serves as an easy way
-    // of stopping people not from Ecclesbourne from creating an account, as they will not have an ecclesbourne email.
+    // User login details are stored in two different tables in the database as said in the design. 
+    // The users table stores regular users, students essentially, and teachers are stored in a seperate
+    // table called teachers. In order to find out which one a user belongs to, we have to be able to
+    // differentiate the two. Fortunately, there is an easy way of doing so. Student's at Ecclesbourne
+    // school will always have 2 letters followed by a . and then @ecclesbourne.derbyhire.sch.uk, whereas
+    // teachers don't have the 2 letters or the . before the email suffix. This allows us to use regex
+    // to split the two. I have used Javascript's builtin regex string notation (with / around the regex
+    // expression) to achieve this. This method of validation is good, as it also serves as an easy way
+    // of stopping people not from Ecclesbourne from creating an account, as they will not have an 
+    // ecclesbourne email.
     const reStudentEmail = /\w{2}\.\w+@ecclesbourne.derbyshire.sch.uk/;
     const reTeacherEmail = /\w+@ecclesbourne.derbyshire.sch.uk/;
 
-    // Here we create an array, this is to store the names of the table containing the login details and the user
-    // details. All this does is allow me to write a single SQL query rather than two, saving some time and also
-    // increasing the scalability of my API, in the event that I have to another table there is less work that I have
-    // to do.
+    // Here we create an array, this is to store the names of the table containing the login details 
+    // and the user details. All this does is allow me to write a single SQL query rather than two, 
+    // saving some time and also increasing the scalability of my API, in the event that I have to 
+    // another table there is less work that I have to do.
     const tableNames = [];
 
-    // fieldName is just a variable, either user_id or teacher_id. This is used later to specify which field to use when
-    // finding the record corresponding to the email passed in the request.
+    // fieldName is just a variable, either user_id or teacher_id. This is used later to specify which
+    // field to use when finding the record corresponding to the email passed in the request.
     let fieldName; 
 
-    // Here we use the builtin .test method on the expressions we created earlier on to find out, what table names and
-    // what field name to add to the variables that we created. Using a conditional if statement, we can change the
-    // behaviour of our SQL query.
-    // If the email passed in matches the student's email format, then add 'logins' and 'users' to the tableNames array.
+    // Here we use the builtin .test method on the expressions we created earlier on to find out, what
+    // table names and what field name to add to the variables that we created. Using a conditional 
+    // if statement, we can change the behaviour of our SQL query. We convert the email to lower case
+    // as that is what we have stored it as in the database, and it is also the way that the regex string
+    // is designed to recognise emails.
+    // If the email passed in matches the student's email format, then add 'logins' and 'users' to the
+    // tableNames array.
     if (reStudentEmail.test(email.toLowerCase())) {
         tableNames.push('logins');
         tableNames.push('users');
         fieldName = 'user_id';
     }
-    // If the email passed in matches the teacher's email format, then add 'teacher_logins' and 'teachers' to the tableNames
-    // array.
+    // If the email passed in matches the teacher's email format, then add 'teacher_logins' and 'teachers'
+    // to the tableNames array.
     else if (reTeacherEmail.test(email.toLowerCase())){
         tableNames.push('teacher_logins');
         tableNames.push('teachers');
         fieldName = 'teacher_id';
     }
-    // If the email matched neither, then it is an invalid email, so we send a response telling the sender that their
-    // request was unsuccessful and that their email did not match a valid format along with a question asking if their
-    // email was part of the Ecclesbourne school.
+    // If the email matched neither, then it is an invalid email, so we send a response telling the
+    // sender that their request was unsuccessful and that their email did not match a valid format
+    // along with a question asking if their email was part of the Ecclesbourne school.
     else {
         res.json({ success: false, message: 'Email did not match valid format - Is it an Ecclesbourne email?' })
     }
 
-    // SELECT * FROM (tableNames[0], i.e. either 'logins' or 'teacher_logins) WHERE email = (lowercase version of email) 
+    // SELECT * FROM (tableNames[0], i.e. either 'logins' or 'teacher_logins) WHERE email = (lowercase
+    // version of email) 
     db.select('*').from(tableNames[0]).where('email', '=', email.toLowerCase())
         // Once the data has been fetched
         .then(data => {
 
-            // If the number of records which matched the SQL condition is not 1, then there was no email which matched
-            // the email passed in the body, and so we send a response telling the user that the email was not recognised.
+            // If the number of records which matched the SQL condition is not 1, then there was no
+            // email which matched the email passed in the body, and so we send a response telling the
+            // user that the email was not recognised.
             if (data.length !== 1) {
                 res.json({ success: false, message: 'Email was not recognised - Do you have an account?' });
                 // Then we return null to escape out of the function.
                 return null;
             }
 
-            // Otherwise, the email was recognised and we now need to compare the password entered to the actual password.
-            // It is not secure to convert the original password to a hash and compare the hashes as plaintext, so instead
-            // we use the bcrypt library which we included to compare the hashes using their secure comparison algorithm.
+            // Otherwise, the email was recognised and we now need to compare the password entered to
+            // the actual password. It is not secure to convert the original password to a hash and 
+            // compare the hashes as plaintext, so instead we use the bcrypt library which we included
+            // to compare the hashes using their secure comparison algorithm.
             if (bcrypt.compareSync(password, data[0].hash)) {
 
-                // If the hashes match, then we can return the user information corresponding to the email passed in. For this
-                // we have to use the foreign key in the logins table to find the relevant user in the users table. Here
-                // Object.values(data[0])[3] is getting the integer which is the foreign key referencing the user_id field in
-                // the users table. We use Object.values to grab the 3rd value of the data object passed in from the select
-                // statement.
-                // SELECT * FROM (tableNames[1], i.e either users or teachers) WHERE (fieldName) = (foreign key integer)
+                // If the hashes match, then we can return the user information corresponding to the
+                // email passed in. For this we have to use the foreign key in the logins table to find
+                // the relevant user in the users table. Here Object.values(data[0])[3] is getting the
+                // integer which is the foreign key referencing the user_id field in the users table.
+                // We use Object.values to grab the 3rd value of the data object passed in from the
+                // select statement.
+                // SELECT * FROM (tableNames[1], i.e either users or teachers) WHERE (fieldName) = 
+                // (foreign key integer);
                 return db.select('*').from(tableNames[1]).where(fieldName, '=', Object.values(data[0])[3])
                     // Once the user information has been fetched, send a response with the data in it.
                     .then(userObject => res.json(userObject[0]))
@@ -212,8 +234,8 @@ app.post('/logins', (req, res) => {
                     .catch(err => res.status(400).json('Failure to get user from table'));
             }
 
-            // If the hashes did not match then we send a failure message back to the sender, telling them the password was
-            // wrong.
+            // If the hashes did not match then we send a failure message back to the sender, telling
+            // them the password was wrong.
             else {
                 res.json({ success: false, message: 'Email or Password Incorrect - Please Try Again.' })
                 // Return null to escape out the function
@@ -223,12 +245,14 @@ app.post('/logins', (req, res) => {
         // If knex could not make the query to the database then send an error message back to the sender.
         .catch(err => res.json('Failure to get items from database'));
 
-})
+});
 
 // Route - /register
 // POST Requests
 app.post('/register', (req, res) => {
 
+    // Here we destructure all of the information in the body into constants that we can use in the
+    // code.
     const {
         email,
         password,
@@ -237,19 +261,28 @@ app.post('/register', (req, res) => {
         intake
     } = req.body;
 
-    // Using Regex to perform email validation on the email passed in.
-    // Here we define two valid strings, one for the teachers email, and
-    // one for the students email.
+    // Then we use regex, similarly to the logins route, to define which table the user should be added
+    // to, or if the email is invalid, in which case it shouldn't be added to either.
     const reStudentEmail = /\w{2}\.\w+@ecclesbourne.derbyshire.sch.uk/;
     const reTeacherEmail = /\w+@ecclesbourne.derbyshire.sch.uk/;
 
     // Creating the hash from the password
     const hash = bcrypt.hashSync(password);
 
-    // If the email passed in is a teacher email
+    // If the email passed in is a teacher email ...
     if (reStudentEmail.test(email)) {
+        // Here we use a Knex transaction. This was not previously explained so I'll do so now. When
+        // inserting into a table, it is important that the query to the database does not collide with
+        // another request. This is highly unlikely with my website currently, as the number of users
+        // is low, but for meeting the requirement of scalability, I have to ensure that my site can
+        // handle a high amount of traffic. What a Knex transaction does is, instead of instantly adding
+        // information, instead we create an instance of a insert statement called trx in my code...
         db.transaction(trx => {
+            // Now we perform the SQL Insert statement as we usually would, but instead on the trx instance.
+            // Here is the SQL equivalent of the trx instance:
+            // INSERT INTO users VALUES (first_name, last_name, intake, false, true);
             trx.insert({
+                // Here we add all of the values that was passed in the request body.
                 first_name: first_name,
                 last_name: last_name,
                 intake: intake,
@@ -260,9 +293,15 @@ app.post('/register', (req, res) => {
                 private: true,
             })
             .into('users')
+            // Here we tell the Knex trx instance to return the user ID of the new user we created. This
+            // is because we need to use this ID to create the Foreign Key on the corresponding login
+            // in the logins table.
             .returning('user_id')
+            // After the user has been created, pass in the user ID
             .then(userObject => {
-                console.log(userObject)
+                // Use the trx instance to perform another SQL query in order to add the login details
+                // to the logins table. The query below has this SQL equivalence:
+                // INSERT INTO logins VALUES (email.toLowerCase(), hash, user_id);
                 return trx('logins')
                     .returning('*')
                     .insert({
@@ -270,14 +309,26 @@ app.post('/register', (req, res) => {
                         hash: hash,
                         user_id: userObject[0].user_id
                     })
+                    // Upon successfully adding the login to the logins table, we can now send a response
+                    // to the user, indicating that they have successfully created an account in our
+                    // database.
                     .then(res.json({ success: true }))
             })
+            // The reason we use a trx instance instead of directly adding the new user is so we can
+            // perform trx.commit and trx.rollback. What this does is, in the case of a collision, it
+            // queues up the trx instance so that it can try again once the database is not busy, hence
+            // preventing any errors during runtime, and also preventing any users from not actually
+            // being added to the database.
             .then(trx.commit)
             .catch(trx.rollback);
         })
+        // If there was an error at any point, the API sends a status 400 telling the sender that an
+        // error occurred in the backend.
         .catch(err => res.status(400).json('Unable to register new user'));
     }
-    // If the email passed in is a student's email
+    // If the email passed in is a student's email we do essentially the same thing here. I won't annotate
+    // the code, since the process is basically identical except for the data that is sent to the database
+    // and the names of the tables and fields used.
     else if (reTeacherEmail.test(email.toLowerCase())) {
         db.transaction(trx => {
             trx.insert({
@@ -309,14 +360,16 @@ app.post('/register', (req, res) => {
         })
         .catch(err => res.status(400).json('Unable to register new user'));
     }
-    // Else the email is invalid, then we send an error code
+    // If the email passed in does not satisfy the regular expression of both the students and the teachers
+    // then the email is invalid, and we should send a response back telling the user that the email
+    // format is wrong.
     else {
         res.json({success: false, message: 'Invalid Email Format'});
         // Return out of the function
         return null;
     }
 
-})
+});
 
 // Route - /tags
 // GET Requests
