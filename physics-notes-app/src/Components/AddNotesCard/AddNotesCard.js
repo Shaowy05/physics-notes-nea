@@ -48,27 +48,9 @@ export default class AddNotesCard extends React.Component {
             })
             .then(response => response.json())
             .then(message => {
-                // if (message.success) {
-                //     fetch('http://localhost:3000/users/num-of-posts', {
-                //         method: 'put',
-                //         headers: {'Content-Type': 'application/json'},
-                //         body: JSON.stringify({
-                //             userId: this.props.currentUser.id
-                //         })
-                //     })
-                //     .then(response => response.json())
-                //     .then(message => {
-                //         console.log(message)
-                //         if (message.success) {
-                //             this.props.currentUser.updateNumOfPosts(message.numOfPosts);
-                //             this.updateFolderHasNotes(this.props.currentFolder.id);
-                //             this.props.changeRoute('index');
-                //         }
-                //     })
-                //     .catch(err => console.log(err, 'Failed to update users post count'));
-                // }
+                console.log(message)
                 if (message.success) {
-                    this.props.updateFolderHasNotes(this.props.currentFolder.id);
+                    this.updateFolderHasNotes(this.props.currentFolder.id);
                     this.props.changeRoute('index');
                 }
                 else {

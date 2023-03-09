@@ -104,9 +104,20 @@ app.get('/folders', (req, res) => {
 // of notes is deleted.
 app.put('/folders/has-notes', (req, res) => {
 
-    // First we destructure the body of the request to give us the ID of the folder and what value we want
-    // to change the folder's has_notes property to.
-    const { folderId, hasNotes } = req.body;   
+    // Declare variables to be initialised in the try-catch;
+    let folderId, hasNotes;
+
+    // We encapsulate the destructuring inside a try catch, in case the user who sent the information
+    // has sent it in the wrong format
+    try {
+        // First we destructure the body of the request to give us the ID of the folder and what value we want
+        // to change the folder's has_notes property to.
+        ({ folderId, hasNotes } = req.body);   
+    }
+    catch {
+        res.status(400).json({ success: false, message: 'JSON format incorrect' });
+        return null;
+    }
 
     // UPDATE folders SET has_notes = (hasNotes) WHERE folder_id = (folderId)
     db('folders').where('folder_id', '=', folderId)
@@ -148,6 +159,16 @@ app.post('/logins', (req, res) => {
 
     // Destructuring the contents of the body of the request, i.e. the email and password.
     const { email, password } = req.body;
+
+    // If either of the email or password is not a string, then we send an error and escape out of the
+    // function.
+    if (!(typeof email === 'string') || !(typeof password === 'string')) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
 
     // User login details are stored in two different tables in the database as said in the design. 
     // The users table stores regular users, students essentially, and teachers are stored in a seperate
@@ -209,15 +230,13 @@ app.post('/logins', (req, res) => {
             // user that the email was not recognised.
             if (data.length !== 1) {
                 res.json({ success: false, message: 'Email was not recognised - Do you have an account?' });
-                // Then we return null to escape out of the function.
-                return null;
             }
 
             // Otherwise, the email was recognised and we now need to compare the password entered to
             // the actual password. It is not secure to convert the original password to a hash and 
             // compare the hashes as plaintext, so instead we use the bcrypt library which we included
             // to compare the hashes using their secure comparison algorithm.
-            if (bcrypt.compareSync(password, data[0].hash)) {
+            else if (bcrypt.compareSync(password, data[0].hash)) {
 
                 // If the hashes match, then we can return the user information corresponding to the
                 // email passed in. For this we have to use the foreign key in the logins table to find
@@ -261,6 +280,29 @@ app.post('/register', (req, res) => {
         intake
     } = req.body;
 
+    // If the email is not in valid format then we need to reject the request
+    if (!(typeof email === 'string')) {
+        res.status(400).json({
+            success: false,
+            message: 'Invalid email format - Please ensure that it is a string'
+        });
+        return;
+    }
+
+    // If any of the variables passed in are undefined, then we want to respond with an error, we don't
+    // have to test for the email, as that is tested earlier.
+    if (
+        [password, first_name, last_name, intake].some((variable) => {
+            return typeof variable === 'undefined';
+        })
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
     // Then we use regex, similarly to the logins route, to define which table the user should be added
     // to, or if the email is invalid, in which case it shouldn't be added to either.
     const reStudentEmail = /\w{2}\.\w+@ecclesbourne.derbyshire.sch.uk/;
@@ -280,7 +322,9 @@ app.post('/register', (req, res) => {
         db.transaction(trx => {
             // Now we perform the SQL Insert statement as we usually would, but instead on the trx instance.
             // Here is the SQL equivalent of the trx instance:
+
             // INSERT INTO users VALUES (first_name, last_name, intake, false, true);
+
             trx.insert({
                 // Here we add all of the values that was passed in the request body.
                 first_name: first_name,
@@ -301,7 +345,9 @@ app.post('/register', (req, res) => {
             .then(userObject => {
                 // Use the trx instance to perform another SQL query in order to add the login details
                 // to the logins table. The query below has this SQL equivalence:
+
                 // INSERT INTO logins VALUES (email.toLowerCase(), hash, user_id);
+
                 return trx('logins')
                     .returning('*')
                     .insert({
@@ -387,20 +433,29 @@ app.get('/tags', (req, res) => {
 // Route for getting the tags based off of a folders ID
 app.get('/tags/:id', (req, res) => {
 
-    const { folderId } = req.params;
+    // First we get the ID using the parameters of the URL
+    const { id } = req.params;
+
+    // Then we use this ID to get the tag which is relevant to it
 
     // SELECT tags.tag_id, tag_name
     // FROM tags, folder_to_tag
     // WHERE tags.tag_id = folder_to_tag.tag_id
     // AND folder_to_tag.folder_id = folderId
-    db.select('tags.tag_id', 'tag_name')
-        .from('tags', 'folder_to_tag')
-        .where('tags.tag_id', '=', 'folder_to_tag.tag_id')
-        .where('folder_to_tag.folder_id', '=', folderId)
-        .then(data => res.json(data))
-        .catch(console.log);
 
-})
+    db('tags').select('tag_id', 'tag_name').whereIn('tag_id',
+        db('folder_to_tag').select('tag_id').where('folder_id', '=', id) 
+    )
+    .then(data => res.json({
+        success: true,
+        message: data
+    }))
+    .catch(err => res.status(400).json({
+        success: false,
+        message: 'Error while trying to fetch the tags' 
+    }));
+
+});
 
 // Route - /users
 // GET Requests
@@ -408,7 +463,10 @@ app.get('/tags/:id', (req, res) => {
 // Route for getting a specific user
 app.get('/users/:userId', (req, res) => {
 
+    // Getting the user ID from the URL parameters
     const { userId } = req.params;
+
+    // SELECT * FROM users WHERE user_id = (userId)
 
     db.select('*').from('users').where('user_id' ,'=', userId)
         .then(data => res.json({ success: true, user: data[0] }))
@@ -418,6 +476,7 @@ app.get('/users/:userId', (req, res) => {
 
 app.put('/users', (req, res) => {
 
+    // Create variables
     const {
         userId,
         firstName,
@@ -425,6 +484,20 @@ app.put('/users', (req, res) => {
         intake,
         isPrivate
     } = req.body;
+
+    // Check to make sure that none of the variables are undefined
+    if (
+        [userId, firstName, lastName, intake, isPrivate].some(variable => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        })
+        return;
+    }
+
+    // UPDATE users SET (first_name, last_name, intake, can_post, private)
+    // VALUES (firstName, lastName, intake, isPrivate) WHERE user_id = (userId)
 
     db('users').where('user_id', '=', userId)
         .update({ 
@@ -438,7 +511,7 @@ app.put('/users', (req, res) => {
         }))
         .catch(err => res.status(400).json({
             success: false,
-            message: err
+            message: 'Failure to update table' 
         }));
 
 })
@@ -448,7 +521,10 @@ app.put('/users', (req, res) => {
 // Route for getting all the tests using user ID
 app.get('/tests/:userId', (req, res) => {
 
+    // Getting the user ID from the URl
     const { userId } = req.params;
+
+    // SELECT * FROM tests WHERE user_id = (userId)
 
     db.select('*').from('tests').where('user_id', '=', userId)
         .then(data => res.json({
@@ -457,7 +533,7 @@ app.get('/tests/:userId', (req, res) => {
         }))
         .catch(err => res.status(400).json({
             success: false,
-            message: err
+            message: 'Failure to retrieve tests from the database' 
         }));
 
 })
@@ -466,6 +542,7 @@ app.get('/tests/:userId', (req, res) => {
 // Route for adding a test to the database
 app.post('/tests', (req, res) => {
 
+    // Loading the information into variables
     const {
         userId,
         testName,
@@ -474,7 +551,33 @@ app.post('/tests', (req, res) => {
         maxScore
     } = req.body;
 
+    // Performing checks to make sure that the information is valid. First we check to see if any of
+    // the variables are undefined.
+    if (
+        [userId, testName, testDate, attainedScore, maxScore].some((variable) => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
+    // Then we check that the attained score is not higher than the max score
+    if (attainedScore > maxScore) {
+        res.status(400).json({
+            success: false,
+            message: 'Attained score higher than the max score'
+        });
+        return;
+    }
+
+    // If everything is fine, then we can initiate a transaction.
     db.transaction(trx => {
+
+        // INSERT INTO tests VALUES (testName, userId, testDate, attainedScore, maxScore)
+        // RETURNING *;
+
         trx.insert({
             test_name: testName,
             user_id: userId,
@@ -483,7 +586,10 @@ app.post('/tests', (req, res) => {
             max_score: maxScore
         })
         .into('tests')
+        // We return the information inputted so that the frontend can render in the information on
+        // tests list, providing a better user experience as it is more responsive.
         .returning('*')
+        // Sending the information to the frontend
         .then(testObject => {
             res.json({
                 success: true,
@@ -495,7 +601,7 @@ app.post('/tests', (req, res) => {
     })
     .catch(err => res.status(400).json({
         success: false,
-        message: err
+        message: 'Error while trying to add the test to the database' 
     }));
 
 })
@@ -506,6 +612,7 @@ app.post('/tests', (req, res) => {
 app.get('/folder-to-tag', (req, res) => {
 
     // SELECT * FROM folder_to_tag;
+
     db.select('*').from('folder_to_tag')
         .then(data => res.json(data))
         .catch(err => res.status(400).json('Unable to get relations'));
@@ -517,32 +624,45 @@ app.get('/folder-to-tag', (req, res) => {
 // Route for getting a specific note using the note ID, does not send over the image URL
 app.get('/notes/note-id=:noteId', (req, res) => {
 
+    // Getting the note ID.
     const { noteId } = req.params;
+
+    // SELECT * FROM notes WHERE note_id = (noteId);
 
     db.select('*').from('notes').where('note_id', '=', noteId)
         .then(note => res.json(note))
         .catch(err => res.status(400).json({ success: false, message: 'Unable to get notes from database' }));
 
-})
+});
 
 // Route for getting the image of the notes using the given ID.
 app.get('/notes/image/:noteId', (req, res) => {
+    
+    // Setting the note ID to a variable
     const { noteId } = req.params;
     
+    // SELECT note_path FROM notes WHERE note_id = (noteId);
+    
     db.select('note_path').from('notes').where('note_id', '=', noteId)
+        // With the data...
         .then(data => {
+            // Convert to an image url...
             const imageUrl = base64Img.base64Sync(data[0].note_path);
+            // And send to the user
             res.json({ success: true, imageUrl: imageUrl });
         })
         .catch(err => res.status(400).json({ success: false, message: 'Failed to get image for notes' }));
 
-})
+});
 
 // Route for getting notes based off a parent folder, doesn't send over the image URL to save
 // some time when sending data
 app.get('/notes/folder-id=:folderId', (req, res) => {
 
+    // Store the folder's ID in a variable
     const { folderId } = req.params;
+
+    // SELECT * FROM notes WHERE folder_id = (folderId);
 
     db.select('*').from('notes').where('folder_id', '=', folderId)
         .then(data => res.json(data))
@@ -554,8 +674,11 @@ app.get('/notes/folder-id=:folderId', (req, res) => {
 // Route for deleting notes based off of their ID
 app.delete('/notes/:noteId', (req, res) => {
 
+    // Store the note's ID into a variable
     const { noteId } = req.params;
 
+    // DELETE FROM notes WHERE note_id = (noteId);
+    
     db('notes').where('note_id', '=', noteId)
         .del()
         .then(() => res.json({ success: true }))
@@ -567,8 +690,11 @@ app.delete('/notes/:noteId', (req, res) => {
 // Route for adding notes
 app.post('/notes', (req, res) => {
 
+    // For the file name of the image, we use the time in milliseconds to avoid any naming collisions
+    // when the user sends over the image.
     const fileName = Date.now();
 
+    // Loading the information into variables
     const {
         noteName,
         notes,
@@ -576,10 +702,33 @@ app.post('/notes', (req, res) => {
         folderId
     } = req.body;
 
+    // If any of the information is undefined then we need to let the sender know that they did not
+    // input the information correctly
+    if (
+        [noteName, notes, authorId, folderId].some(variable => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
+    // Convert the base 64 Image URL to a jpg file so that it can be accessed like a normal image in
+    // the backend. Briefly discussed in the design phase, having the images stored as regular jpg files
+    // in a hosting service (just the notes folder in this case) makes monitoring the content going
+    // in and out a lot easier.
     base64Img.imgSync(notes, './notes/', fileName);
 
+    // Initiate a Knex transaction
     db.transaction(trx => {
+
+        // INSERT INTO notes VALUES (path to notes, noteName, authorId, folderId);
+
         trx.insert({
+            // Here we use the path that we stored in the .env file earlier, and the filename that we
+            // instantiated earlier, and then we use string concatenation to create a path to the notes
+            // with which we can use to store the image of the notes in.
             note_path: `${process.env.API_PATH}/notes/${fileName}.jpg`,
             note_name: noteName,
             author_id: authorId,
@@ -587,7 +736,7 @@ app.post('/notes', (req, res) => {
         })
         .into('notes')
         .then(trx.commit)
-        .then(res.json({ success: true }))
+        .then(() => res.json({ success: true }))
         .catch(trx.rollback);
     })
     .catch(err => res.status(400).json({ success: false }));
@@ -599,7 +748,10 @@ app.post('/notes', (req, res) => {
 // Route for getting questions using the parent note ID
 app.get('/questions/note-id=:noteId', (req, res) => {
 
+    // Store the note ID in a variable
     const { noteId } = req.params;
+
+    // SELECT * FROM questions WHERE note_id = (noteId);
 
     db.select('*').from('questions').where('note_id', '=', noteId)
         .then(data => res.json({ success: true, questions: data }))
@@ -611,9 +763,16 @@ app.get('/questions/note-id=:noteId', (req, res) => {
 // Route for posting questions to the database
 app.post('/questions', (req, res) => {
 
+    // Here we get the currentDate as a Date object. This is so we can store the date the question was
+    // posted in the database.
     const currentDate = new Date();
+    // We only need the date not the time, so we use the toISOString method to convert the date into
+    // standard format, recommended for Postgres, and then we use .split on the character T, which is
+    // always between the date and the time for an ISO date, and then we take the first item in the
+    // array created by the split function.
     const isoDate = `${currentDate.toISOString().split('T')[0]}`;
 
+    // Storing the question details in variables
     const {
         questionTitle,
         questionText,
@@ -621,7 +780,23 @@ app.post('/questions', (req, res) => {
         noteId,
     } = req.body;
 
+    // If any of the information is undefined then we need to let the sender know that they did not
+    // input the information correctly
+    if (
+        [questionTitle, questionText, authorId, noteId].some(variable => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
+    // Initiate a Knex transaction
     db.transaction(trx => {
+
+        // INSERT INTO questions VALUES (questionTitle, questionText, authorId, noteId, isoDate);
+
         trx.insert({
             question_title: questionTitle,
             question_text: questionText,
@@ -646,7 +821,10 @@ app.post('/questions', (req, res) => {
 // Route for getting responses using the parent question ID
 app.get('/responses/question-id=:questionId', (req, res) => {
 
+    // Putting the questionId into a variable
     const { questionId } = req.params;
+
+    // SELECT * FROM responses WHERE question_id = (questionId);
 
     db.select('*').from('responses').where('question_id', '=', questionId)
         .then(data => res.json({ success: true, responses: data }))
@@ -658,13 +836,30 @@ app.get('/responses/question-id=:questionId', (req, res) => {
 // Route for adding a response to the database
 app.post('/responses', (req, res) => {
 
+    // Storing the response information in variables
     const {
         responseText,
         authorId,
         questionId,
     } = req.body;
 
+    // If any of the information is undefined then we need to let the sender know that they did not
+    // input the information correctly
+    if (
+        [responseText, authorId, questionId].some(variable => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
+    // Initiate Knex transaction
     db.transaction(trx => {
+
+        // INSERT INTO responses VALUES (responseText, authorId, questionId, false, 0, 0);
+
         trx.insert({
             response_text: responseText,
             author_id: authorId,
@@ -685,9 +880,32 @@ app.post('/responses', (req, res) => {
 // PUT Requests
 // Route for incrementing or decrementing the upvotes/downvotes value
 app.put('/responses/vote', (req, res) => {
+
+    // Storing the information in variables. Here, field signifies whether or not the field that should
+    // be updated is the upvotes field or the downvotes field. Action will be one of 'increment' or
+    // 'decrement', signalling whether or not we should increase the number of upvotes/downvotes or
+    // decrease it.
     const { responseId, field, action } = req.body;
 
+    // If any of the information is undefined then we need to let the sender know that they did not
+    // input the information correctly
+    if (
+        [responseId, field, action].some(variable => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
+    // Here we use conditional logic to pick the SQL query. First we check for the action data. If the
+    // user wants to increment...
     if (action === 'increment') {
+        // Then we access the responses table, and increment the field that was passed in by one.
+
+        // UPDATE responses INCREMENT (field) BY 1;
+
         db('responses').where('response_id', '=', responseId)
             .increment(field, 1)
             .then(res.json({ success: true }))
@@ -697,7 +915,11 @@ app.put('/responses/vote', (req, res) => {
              }));
     }
 
+    // Otherwise, if the action was decrement then we want to decrease the field passed in by one.
     else if (action === 'decrement') {
+        
+        // UPDATE responses DECREMENT (field) BY 1;
+
         db('responses').where('response_id', '=', responseId)
             .decrement(field, 1)
             .then(res.json({ success: true }))
@@ -716,7 +938,22 @@ app.put('/responses/vote', (req, res) => {
 // Route for updating whether or not a response is a solution
 app.put('/responses/is-solution', (req, res) => {
 
+    // Store information in variables
     const { responseId, isSolution } = req.body;
+
+    // If any of the information is undefined then we need to let the sender know that they did not
+    // input the information correctly
+    if (
+        [responseId, isSolution].some(variable => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
+    // UPDATE responses SET (is_solution) VALUES (isSolution) WHERE response_id = (responseId);
 
     db('responses').where('response_id', '=', responseId)
         .update({ 'is_solution': isSolution })
@@ -735,19 +972,43 @@ app.put('/responses/is-solution', (req, res) => {
 // Route for getting the IDs of responses that the user has voted on
 app.get('/votes/:userId', (req, res) => {
 
+    // Storing the user ID in a variable
     const { userId } = req.params;
+
+    // Checking to make sure the user's ID is a number 
+    if (typeof userId === 'number') {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format - Please make sure the ID is an integer'
+        });
+    }
+
+    // Since we are getting both the upvotes and the downvotes for the user, we have to make two asynchronous
+    // calls to the database, which means that we need to make sure that the API doesn't send back information
+    // before all of the data has been retrieved from the database. For this, we need to store the result
+    // of both requests in an instance of a Promise, called upvoteIds and downvoteIds here, and then
+    // use the Promise.all function to execute the next bit of data after both are done.
+    
+    // SELECT response_id FROM upvotes WHERE user_id = (userId);
 
     const upvoteIds = db.select('response_id').from('upvotes')
         .where('user_id', '=', userId)
         .catch(err => console.log(err));
 
+    // SELECT response_id FROM downvotes WHERE user_id = (userId);
+
     const downvoteIds = db.select('response_id').from('downvotes')
         .where('user_id', '=', userId)
         .catch(err => console.log(err));
 
+    // Once both the upvotes and the downvotes have been fetched, we can now work on sending a response
+    // back to the user. We call Promise.all, passing in an array of the result of upvoteIds and downvoteIds
+    // so that we can access them in the Promise chain.
     Promise.all([upvoteIds, downvoteIds])
         .then(votes => {
+            // Storing the results in variables
             const [upvoteIds, downvoteIds] = votes;
+            // Sending the result back
             res.json({
                 success: true,
                 upvoteIds: upvoteIds,
@@ -765,9 +1026,29 @@ app.get('/votes/:userId', (req, res) => {
 // Route for adding a vote to either upvotes or downvotes
 app.post('/votes', (req, res) => {
 
+    // Storing the information in variables, we need table here to make sure we access the correct link
+    // table.
     const { userId, responseId, table } = req.body;
 
+    // If any of the information is undefined then we need to let the sender know that they did not
+    // input the information correctly
+    if (
+        [responseId, userId, table].some(variable => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
+    // Initiating a Knex transaction
     db.transaction(trx => {
+        // We're allowed to statically define the field names here because they are the same for the 
+        // upvotes table and the downvotes table.
+
+        // INSET INTO table VALUES (user_id, response_id);
+
         trx.insert({
             user_id: userId,
             response_id: responseId
@@ -779,7 +1060,7 @@ app.post('/votes', (req, res) => {
     })
     .catch(err => res.json({
         success: false,
-        message: err
+        message: 'Error while trying to add vote' 
     }));
 
 })
@@ -788,7 +1069,25 @@ app.post('/votes', (req, res) => {
 // Route for deleting an entry from either upvotes/downvotes
 app.delete('/votes', (req, res) => {
 
+    // Storing the information in variables
     const { userId, responseId, table } = req.body;
+
+    // If any of the information is undefined then we need to let the sender know that they did not
+    // input the information correctly
+    if (
+        [responseId, userId, table].some(variable => typeof variable === 'undefined')
+    ) {
+        res.status(400).json({
+            success: false,
+            message: 'Incorrect JSON format'
+        });
+        return;
+    }
+
+    // We want to delete the relation with the correct user ID and response ID, so we need multiple
+    // conditions inside the SQL query
+
+    // DELETE FROM table WHERE user_id = (userId) AND response_id = (responseId);
 
     db(table).where('user_id', '=', userId)
         .where('response_id', '=', responseId)
