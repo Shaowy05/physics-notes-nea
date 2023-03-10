@@ -23,7 +23,7 @@ import express from 'express';
 // Cors is needed to allow for our frontend and backend to communicate securely.
 // A common vulnerability of websites is something called 'cross origin http requests', where
 // an unknown sender requests data from an API. To prevent this, Express by default prevents
-// requests from unknown origins, and using cors allows for my frontend on port 3001 communicate
+// requests from unknown origins, and using cors allows for my frontend on port 3002 communicate
 // with port 3000.
 import cors from 'cors';
 
@@ -668,7 +668,7 @@ app.get('/notes/folder-id=:folderId', (req, res) => {
         .then(data => res.json(data))
         .catch(err => res.status(400).json({ success: false, message: 'Error while trying to retrieve notes' }));
 
-})
+});
 
 // DELETE Requests
 // Route for deleting notes based off of their ID
@@ -684,7 +684,7 @@ app.delete('/notes/:noteId', (req, res) => {
         .then(() => res.json({ success: true }))
         .catch(err => res.status(400).json({ success: false, message: err }));
 
-})
+});
 
 // POST Requests
 // Route for adding notes
@@ -718,7 +718,16 @@ app.post('/notes', (req, res) => {
     // the backend. Briefly discussed in the design phase, having the images stored as regular jpg files
     // in a hosting service (just the notes folder in this case) makes monitoring the content going
     // in and out a lot easier.
-    base64Img.imgSync(notes, './notes/', fileName);
+    try {
+        base64Img.imgSync(notes, './notes/', fileName);
+    }
+    catch(err) {
+        res.status(400).json({
+            success: false,
+            message: 'Please ensure you are passing in the image URL in correct form'
+        });
+        return;
+    }
 
     // Initiate a Knex transaction
     db.transaction(trx => {
@@ -739,9 +748,9 @@ app.post('/notes', (req, res) => {
         .then(() => res.json({ success: true }))
         .catch(trx.rollback);
     })
-    .catch(err => res.status(400).json({ success: false }));
+    .catch(err => res.status(400).json({ success: err }));
 
-})
+});
 
 // Route - /questions
 // GET Requests
@@ -814,7 +823,7 @@ app.post('/questions', (req, res) => {
         message: 'Failed to add question to database'
     }))
 
-})
+});
 
 // Route - /responses
 // GET Requests

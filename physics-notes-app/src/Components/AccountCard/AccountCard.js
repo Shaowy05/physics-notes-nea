@@ -67,26 +67,40 @@ export default class AccountCard extends React.Component {
     // Validating the user on form submit
     validateUser = event => {
 
+        // Here we retrieve the email and password from the state.
         const { inputEmail, inputPassword } = this.state;
 
+        // Then we communicate with the backend to login to the application with a POST request.
         fetch('http://localhost:3000/logins', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
+            // Passing in the information
             body: JSON.stringify({
                 email: inputEmail,
                 password: inputPassword
             })
         })
+        // Converting the response from JSON to a Javascript object.
         .then(response => response.json())
         .then(userObject => {
 
+            // Declare a user variable, this will be updated and eventually loaded into the state of
+            // the app.js file using the loadUser prop.
             let user;
 
+            // If the message from the API has a success value of undefined, then a failure occured
+            // in the backend and so we set the failedToSignIn property in the state to be true, hence
+            // updating the rendering function to alert the user that either the credentials they entered
+            // are wrong, or the API is not functionin properly.
             if (userObject.success !== undefined) {
                 this.setState({ failedToSignIn: true });
             }
 
+            // Otherwise, a good response was received and we can continue with the function.
             else {
+                // Here we store the user values loaded from the API into an array so that we can easily
+                // create the User or the Teacher instance. We do this by using the built in Object.values
+                // function.
                 const userObjectValues = Object.values(userObject);
 
                 // Using these regex strings to find out which type of user they are based on their
@@ -94,7 +108,11 @@ export default class AccountCard extends React.Component {
                 const reStudentEmail = /\w{2}\.\w+@ecclesbourne.derbyshire.sch.uk/;
                 const reTeacherEmail = /\w+@ecclesbourne.derbyshire.sch.uk/;
 
+                // Testing the email against the regex expressions gives us this conditional statement.
+                // If the email matches the student email, then we add a new instance of user.
                 if (reStudentEmail.test(inputEmail)) {
+                    // Instantiating the user variable declared earlier with an instance of the User
+                    // class, passing in the values returned by the API.
                     user = new User(
                         userObjectValues[0],
                         userObjectValues[1],
@@ -104,6 +122,8 @@ export default class AccountCard extends React.Component {
                         userObjectValues[5]
                     );
                 }
+                // Otherwise if the email matched the teacher's email format, then we must initialise
+                // the user variable to an instance of the Teacher class instead.
                 else if (reTeacherEmail.test(inputEmail)) {
                     user = new Teacher(
                         userObjectValues[0],
@@ -114,10 +134,15 @@ export default class AccountCard extends React.Component {
                         userObjectValues[5]
                     );
                 }
+                // Otherwise, the backend API did not properly perform the regex checks, so we throw
+                // error to instigate a fix on the backend.
                 else {
                     throw new Error('Invalid email passed regex checks in backend');
                 }
 
+                // Finally, we return a new promise onto the next stage of the promise chain. Here,
+                // the data we are passing on is the user variable, so that it can be used in the next
+                // stage.
                 return new Promise((resolve, reject) => {
                     resolve(user);
                     reject('Failed to fetch user from database');
@@ -125,23 +150,38 @@ export default class AccountCard extends React.Component {
             }
         })
         .then(user => {
+            // Here we say that if the user is an instance of the User class, then we need to fetch
+            // the votes for that given user.
             if (user instanceof User) {
+                // Here we perform the GET request to the backend, asking for the votes for this user.
+                // As you can see we pass in the id of the user as the parameter for the URL.
                 fetch(`http://localhost:3000/votes/${user.id}`)
+                // Convert the response from a JSON file to a Javascript object.
                 .then(response => response.json())
                 .then(data => {
+                    // If the API does not respond with a success value of true then we throw an error
+                    // as there was a failure to retrieve the user.
                     if (!data.success) {
                         throw new Error('Failed to get votes for user');
                     }
+                    // For each of the upvote IDs passed in the response, we want to update the array
+                    // of IDs in the user variable. This is so that any voting done in the forums for 
+                    // this user can be rendered.
                     data.upvoteIds.forEach(upvoteId => user.updateUpvoteResponseIds(upvoteId.response_id));
+                    // We do the same for any downvotes.
                     data.downvoteIds.forEach(downvoteId => user.updateDownvoteResponseIds(downvoteId.response_id));
 
+                    // Using the loadUser function passed in as a prop to add this user instance to
+                    // the state of the App. See app.js for the definition of this function.
                     this.props.loadUser(user);
 
+                    // Return out of the function and use the changeRoute prop to go to the index page.
                     return this.props.changeRoute('index');
 
                 })
             }
         })
+        // If there were any errors, log to console
         .catch(err => console.log(err));
     }
 
