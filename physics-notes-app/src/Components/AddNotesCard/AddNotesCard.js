@@ -4,11 +4,13 @@ import Alert from 'react-bootstrap/Alert';
 
 import './AddNotesCard.css';
 
+// Inheriting React.Component
 export default class AddNotesCard extends React.Component {
 
     constructor(props) {
         super(props);
 
+        // In the state we have fields for the ti
         this.state = {
 
             notesTitle: '',

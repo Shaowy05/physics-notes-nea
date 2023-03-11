@@ -8,10 +8,10 @@ const mergeSort = array => {
     // first validate that all of the items in the array is a number. If not then we log an error and
     // escape out of the function. Here we use the .some() method to easily loop through the array,
     // the javascript typeof keyword to determine whether or not the item is valid.
-    if (array.some(element => typeof element !== 'number')) {
-        console.log('Non numerical value in array - Cannot sort');
-        return;
-    }
+    // if (array.some(element => typeof element !== 'number')) {
+    //     console.log('Non numerical value in array - Cannot sort');
+    //     return;
+    // }
 
     // Then we define the base case, if the length of the array is 1 (or less) then the array is considered
     // sorted. This is important to terminate the splitting of any arrays during the merge sort algorithm.

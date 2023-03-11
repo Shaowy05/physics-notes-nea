@@ -19,7 +19,7 @@ export default class Stack {
             return new Error('Cannot display top item of an empty stack');
         }
 
-        this.items[this.items.length - 1];
+        return this.items[this.items.length - 1];
     }
     // Push adds an item to the top of the stack.
     push = (item) => this.items.push(item);

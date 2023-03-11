@@ -16,29 +16,29 @@ import Alert from 'react-bootstrap/Alert';
 import User from '../../Logic/User';
 import Teacher from '../../Logic/Teacher';
 
-// The Account Card Component - A form for letting the user sign in and also register
+// Inheriting from the React.Component class.
 export default class AccountCard extends React.Component {
 
-    // Creating a state to hold the user input
     constructor(props) {
         super(props);
 
         // Creating the state
         this.state = {
 
-            // A property which notifies the component if the user has just failed to
-            // register, in which case a notification should appear.
+            // This state is needed to show the an alert if the user fails to register. This will be
+            // a boolean that can be used with conditional logic in the HTML.
             failedToRegister: false,
 
-            // A property which notifies the component if the user has just failed to 
-            // sign in, so that a notification appears.
+            // This is a similar state but for signing in.
             failedToSignIn: false,
 
-            // For both sign in and register
+            // The following two states are relevant to both the register type and the sign in type.
+            // These store the text inside the email field and the password field.
             inputEmail: '',
             inputPassword: '',
 
-            // Exclusively for register
+            // The following three are exclusively for the register route. These store the fields for
+            // the registering User's personal information.
             inputFirstName: '',
             inputLastName: '',
             inputIntake: '',
@@ -64,13 +64,15 @@ export default class AccountCard extends React.Component {
         return this.setState({ inputIntake: event.target.value });
     }
 
-    // Validating the user on form submit
+    // This is the method that is called when the user presses the sign in button. It takes in the event
+    // parameter, passed in from the button.
     validateUser = event => {
 
-        // Here we retrieve the email and password from the state.
+        // First we load the email and password into variables from the state.
         const { inputEmail, inputPassword } = this.state;
 
-        // Then we communicate with the backend to login to the application with a POST request.
+        // Then we initiate a POST request to the API, with the email and password in the body of the
+        // JSON request.
         fetch('http://localhost:3000/logins', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
@@ -82,6 +84,7 @@ export default class AccountCard extends React.Component {
         })
         // Converting the response from JSON to a Javascript object.
         .then(response => response.json())
+        // With this new object...
         .then(userObject => {
 
             // Declare a user variable, this will be updated and eventually loaded into the state of
@@ -185,11 +188,14 @@ export default class AccountCard extends React.Component {
         .catch(err => console.log(err));
     }
 
-    // Registering the user on form submit
+    // Now we have the method for adding a user to the database. As with the validateUser method, we
+    // also take in the event paramater passed by the button.
     registerUser = event => {
-        // Destructuring the state
+        // Destructuring the state into variables for easier use.
         const { inputEmail, inputPassword, inputFirstName, inputLastName, inputIntake } = this.state
 
+        // Here we send a POST request to the register route, passing in the email, password and other
+        // personal details in the body of the request.
         fetch('http://localhost:3000/register', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
@@ -201,17 +207,24 @@ export default class AccountCard extends React.Component {
                 intake: inputIntake
             })
         })
+        // Convert the response into a Javascript object.
         .then(response => response.json())
+        // With the response...
         .then(successObject => {
-            console.log(successObject);
+            // If the POST request was a success, we can change the route to signin so that the user
+            // can validate his details and go to the index page.
             if (successObject.success) {
                 this.props.changeRoute('signin');
             }
+            // If the request failed then we update the failedToRegister state to be true. This is done
+            // so that the user will have some visual feedback.
             else {
                 this.setState({ failedToRegister: true });
             }
         })
-        .catch(err => console.log('Failure during registration'))
+        // If there was any form of failure during the backend then we do the same thing so that the 
+        // user knows something is wrong.
+        .catch(err => this.setState({ failedToRegister: true }));
     }
 
     // Render Method for AccountCard

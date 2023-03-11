@@ -7,6 +7,7 @@ export default class Tag {
         this.active = false;
     }
 
+    // Set the active property to the opposite of itself using the NOT operator.
     toggleActive = () => {
         this.active = !this.active;
     }

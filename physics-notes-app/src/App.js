@@ -9,7 +9,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Importing React Components
 import NavigationBar from './Components/NavigationBar/NavigationBar';
-
 import AccountCard from "./Components/AccountCard/AccountCard";
 import TopicTable from "./Components/TopicTable/TopicTable";
 import AddNotesCard from "./Components/AddNotesCard/AddNotesCard";
@@ -19,7 +18,8 @@ import NoteCard from "./Components/NoteCard/NoteCard";
 import Container from "react-bootstrap/esm/Container";
 import ProfileCard from "./Components/ProfileCard/ProfileCard";
 
-// The App React Component - Container for all other components 
+// Here we create a class called App which inherits from the React.Component class, giving us access
+// to all the methods such as the render method. We export this so that it can be used in index.js.
 export default class App extends React.Component {
 
     // Construtor for App Component
@@ -30,35 +30,46 @@ export default class App extends React.Component {
         // Creating the state for our App
         this.state = {
 
-            // A property for the current note
+            // A property for the current note. This will store an instance of the Note class and represents
+            // the note that should be rendered on the notes route.
             currentNote: null,
             
-            // A property for the current folder
+            // A property for the current folder. This is often passed into components as a prop since
+            // information about the user's selected folder is vital to deciding what content to show.
             currentFolder: null,
 
-            // A property for the folder array
+            // A property for the folder array. This will be an instance of the Folder Array class.
             folderArray: null,
 
-            // Routing properties
-            // Route is 'signin' by default
+            // Here we have an item in the state to store the current route. This is used to decide
+            // what components to render, as can be seen in the swtich statement used later on.
             route: 'signin',
 
-            // User is not signed in by default
+            // User is not signed in by default, which prevents the user from accessing any items on
+            // the routes unless they sign in.
             signedIn: false,
 
-            // Creating the User object to store info about the user
+            // Finally we add a state for storing the current user. This is needed to show the correct
+            // web page depending on the permissions that the user has and also the type if the user
+            // is a teacher.
             user: null
         }
     }
 
-    // changeRoute handles the event where a user clicks a link
+    // One common state that needs to be updated from child components is the route. For example, if
+    // the user clicks on a note in the topic table component the route should be changed to the notes
+    // route. This function takes in one parameter, which is the string representing the route to change
+    // to.
     changeRoute = route => {
-        // Setting state.route to the passed route
+        // Setting state.route to the passed route, this will automatically hydrate the webpage to show
+        // the new components.
         return this.setState({ route: route });
     }
 
-    // loadUser method lets the signin and register routes load user
+    // The load user method will be passed into the Account Card component so that it can update the
+    // user stored in the state if a successful sign in occurs.
     loadUser = user => {
+        // Here we set the signed in state to be true, and assign a new user to the state.
         return this.setState({ signedIn: true, user: user });
     }
 
@@ -68,19 +79,20 @@ export default class App extends React.Component {
     // A method to update the folder array in the state
     updateFolderArray = folderArray => this.setState({ folderArray: folderArray });
 
+    // A method for updating the current note stored in the state.
     updateCurrentNote = note => this.setState({ currentNote: note });
     
     // Render method for App
     render() {
 
-        // Destructuring the state into variables for easier
-        // access
+        // Destructuring the state into variables for easier access during the method.
         const { route, signedIn, user, currentFolder, folderArray, currentNote } = this.state;
 
-        // Returning the App Component
-        // An if statement to decide what to return
-        
-        // Sign In route
+        // Here we use an if statement with the route as the condition to emulate the 'routes' that
+        // a typical website would have.
+        // Firstly, if the route is signin then return the Account Card component, passing in the changeRoute
+        // function and the loadUser function. We pass in a type prop of 'signin' to tell the Account
+        // Card to be of type sign in.
         if (route === 'signin') {
             return(
                 <div style={{display: 'flex', justifyContent: 'center', paddingTop: '2rem', alignContent: 'center'}}>
@@ -88,8 +100,8 @@ export default class App extends React.Component {
                 </div>
             );
         }
-
-        // Index route
+        // This is the index route, the main page where all the folders are displayed. Here we render
+        // a navigation bar, with the topic table component.
         else if (route === 'index') {
             return(
                 <div>
@@ -105,8 +117,9 @@ export default class App extends React.Component {
                 </div>
             );
         }
-
-        // Register route
+        // If the route is 'register' then we render the Account Card in a similar fashion to the signin
+        // except we pass in a type of 'register' instead of 'signin' so that the user can enter personal
+        // details and add their profile to the database.
         else if (route === 'register') {
             return(
                 <div style={{display: 'flex', justifyContent: 'center', paddingTop: '2rem', alignContent: 'center'}}>
@@ -114,8 +127,9 @@ export default class App extends React.Component {
                 </div>
             );
         }
-
-        // Notes route
+        // If the route is 'notes' then we render the navigation bar with the Note Card component. The
+        // Note Card component needs the current note, the current folder, the current user and also
+        // the change route function.
         else if (route === 'notes') {
             return(
                 <div>
@@ -124,7 +138,10 @@ export default class App extends React.Component {
                 </div>
             );
         }
-
+        // If the route is 'add-notes' then we render the Add Notes component so that the user can add
+        // a set of notes to the database. This route requires the current user, current folder, the
+        // array of folders and the changeRoute function. This information is needed so that the API
+        // can set up the proper relations in the database.
         else if (route === 'add-notes') {
             return(
                 <div>
@@ -133,8 +150,9 @@ export default class App extends React.Component {
                 </div>
             );
         }
-
-        // Profile route
+        // The profile route is the route where the user can update their personal details and also
+        // add tests to their account. These tests will be displayed in a graph. For this reason,
+        // we need to pass in the current user as a prop to the profile page.
         else if (route === 'profile') {
             return(
                 <div>
@@ -143,14 +161,13 @@ export default class App extends React.Component {
                 </div>
             );
         }
-
-        // Invalid route
+        // If the route is invalid then we return an error page to the user so that they know something
+        // has gone wrong.
         else {
             console.log('Invalid route in state');
             return(
                 <h1>Something went wrong!</h1>
-            )
+            );
         }
-    
     }
 }
