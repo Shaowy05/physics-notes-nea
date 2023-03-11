@@ -1,8 +1,7 @@
-// The folder class stores information about sections, topics etc
-
+// Exporting the Folder class
 export default class Folder {
 
-    // Constructor
+    // PROPERTIES ==================================================================================
     constructor(id, number, title, hasNotes, parentId, type, tags = []) {
         this.id = id;
         this.number = number;
@@ -12,6 +11,7 @@ export default class Folder {
         this.type = type;
         this.tags = tags
     }
+    // =============================================================================================
 
     addTag = tag => {
         this.tags.push(tag);

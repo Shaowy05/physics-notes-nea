@@ -884,7 +884,7 @@ app.post('/responses', (req, res) => {
     })
     .catch(err => res.status(400).json({ success: false, message: err }))
 
-})
+});
 
 // PUT Requests
 // Route for incrementing or decrementing the upvotes/downvotes value
@@ -942,7 +942,7 @@ app.put('/responses/vote', (req, res) => {
         res.status(400).json({ success: false, message: 'Invalid action parameter' });
     }
 
-})
+});
 
 // Route for updating whether or not a response is a solution
 app.put('/responses/is-solution', (req, res) => {
@@ -974,7 +974,7 @@ app.put('/responses/is-solution', (req, res) => {
             message: err
         }));
 
-})
+});
 
 // Route - /votes
 // GET Requests
@@ -1029,7 +1029,7 @@ app.get('/votes/:userId', (req, res) => {
             message: err
         }));
 
-}) 
+}); 
 
 // POST Requests
 // Route for adding a vote to either upvotes or downvotes
@@ -1072,7 +1072,7 @@ app.post('/votes', (req, res) => {
         message: 'Error while trying to add vote' 
     }));
 
-})
+});
 
 // DELETE Requests
 // Route for deleting an entry from either upvotes/downvotes
@@ -1107,9 +1107,10 @@ app.delete('/votes', (req, res) => {
             message: err
         }));
 
-})
+});
 
 // Finally telling the app to listen on port 3000
 app.listen(3000, () => {
     console.log('App is listening on port 3000');
 });
+
