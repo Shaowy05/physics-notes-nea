@@ -7,28 +7,39 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 
+// Inheriting from React.Component.
 export default class FilterCard extends React.Component {
 
+    // Constructor for the FilterCard component.
     constructor() {
         super();
 
+        // The only state here is one called 'open'. In order to make the user's viewport display information
+        // in the most efficient way possible I want them to be able to hide the Filter Card when they
+        // look through the folders. The 'open' state defines whether or not this component is collapsed
+        // or not.
         this.state = {
             open: false,
         }
 
     }
 
+    // The render method for the Filter Card component.
     render() {
 
+        // Getting the open state.
         const { open } = this.state;
+        // Getting all of the methods used for updating the settings in the Topic Table component. These
+        // will be attached to their respective buttons so that the Topic Table component can show the
+        // folders that the user wants to see.
         const { 
             updateSearch, updateHideSections, updateHideEmptyFolders, updateOrderByOption,
             tags, updateTagAtIndex 
         } = this.props;
 
-        // The different ways to order the folders, stored in an array.
-        // This allows for us to use the .map function to more efficiently
-        // display the radio checkboxes.
+        // Currently there are only two options for ordering the folders, however with scalability in
+        // mind, I wanted to make it easy to add options. For this reason, I hold the order by options
+        // in an array and iterate over them in the HTML.
         const orderByOptions = ["Number", "Title"];
 
         return(
@@ -105,7 +116,5 @@ export default class FilterCard extends React.Component {
                 </Card>
             </div>
         );
-
     }
-
 }
