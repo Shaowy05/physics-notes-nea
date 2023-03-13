@@ -358,7 +358,7 @@ app.post('/register', (req, res) => {
                     // Upon successfully adding the login to the logins table, we can now send a response
                     // to the user, indicating that they have successfully created an account in our
                     // database.
-                    .then(res.json({ success: true }))
+                    .then(() => res.json({ success: true }))
             })
             // The reason we use a trx instance instead of directly adding the new user is so we can
             // perform trx.commit and trx.rollback. What this does is, in the case of a collision, it
@@ -411,8 +411,6 @@ app.post('/register', (req, res) => {
     // format is wrong.
     else {
         res.json({success: false, message: 'Invalid Email Format'});
-        // Return out of the function
-        return null;
     }
 
 });

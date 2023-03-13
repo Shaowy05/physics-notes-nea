@@ -227,19 +227,19 @@ export default class AccountCard extends React.Component {
         .catch(err => this.setState({ failedToRegister: true }));
     }
 
-    // Render Method for AccountCard
+    // The render method for the Account Card component.
     render() {
 
-        // Grabbing current for register card
+        // Here we get the current date, this is needed later on in the form to ensure that the user
+        // cannot select a year higher than the current one. This wouldn't technically lead to an error
+        // but I thought it'd be best to implement anyway.
         const currentDate = new Date()
-
         // Destructuring props for easier access
         const { type, changeRoute } = this.props;
-
-        // Destructuring the state
+        // Destructuring the state as well.
         const { failedToRegister, failedToSignIn } = this.state;
 
-        // Returning the Account Card
+        // The HTML for account card.
         return (
             <div className="AccountCard">
 
