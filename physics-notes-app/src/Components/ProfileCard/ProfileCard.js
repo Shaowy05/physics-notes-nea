@@ -18,23 +18,36 @@ import Test from "../../Logic/Test";
 
 import './ProfileCard.css';
 
+// Inheriting from React.Component.
 export default class ProfileCard extends React.Component {
 
     constructor(props) {
         super(props);
 
         this.state = {
+            // Fields for the user's new information, this will be used in order to update the new information.
             updatedFirstName: '',
             updatedLastName: '',
             updatedIntake: 0,
             updatedIsPrivate: true,
 
+            // Here we have a boolean for if the user has changed their personal information. This is
+            // so that the submit button is greyed out if they haven't changed anything.
             userHasChangedValues: false,
+            // This is a boolean which is used to show the user a success message and telling them to
+            // refresh the page.
             successfullyChangedValues: false,
+            // This boolean is used to display an error message if something went wrong when trying
+            // to udpate their details.
             failedToChangeValues: false,
 
+            // A boolean for determining if the tests were fetched.
             testsFetched: false,
+            // An array to store the tests.
             tests: [],
+            // Here we have an object that will be used with the Graph later on, here we store a the
+            // label for the graph, the background colour and also an array for the data of the graph.
+            // This will be appended to so that the graph can be updated.
             graphData: {
                 labels: [],
                 datasets: [
@@ -45,8 +58,10 @@ export default class ProfileCard extends React.Component {
                     }
                 ]
             },
+            // This boolean is used to dictate whether or not the graph should be displayed or not.
             graphDataReady: true,
 
+            // Here we have some fields for adding a test, along with booleans to show alerts if needed.
             addingTest: false,
             failedToAddTest: false,
             addTestName: '',
@@ -56,15 +71,20 @@ export default class ProfileCard extends React.Component {
         }
     }
 
+    // Once the component has mounted we want to all of the user information and store it in the state.
+    // We also want to get all of the tests that belong to the user.
     componentDidMount() {
 
+        // Getting the user from the props.
         const { user } = this.props;
 
+        // Here we automatically fill out all of the fields to contain the user's information.
         document.getElementById('firstName').value = user.firstName;
         document.getElementById('lastName').value = user.lastName;
         document.getElementById('intake').value = user.intake;
         document.getElementById('isPrivate').checked = user.isPrivate;
 
+        // Then we add the information to the state as well.
         this.setState({
             updatedFirstName: user.firstName,
             updatedLastName: user.lastName,
@@ -73,15 +93,24 @@ export default class ProfileCard extends React.Component {
             userHasChangedValues: false
         });
 
+        // Now we get all of the tests. We do this by sending a GET request to the tests endpoint, passing
+        // in the user ID as a parameter.
         fetch(`http://localhost:3000/tests/${user.id}`)
+            // Converting the JSON response to a Javascript object.
             .then(response => response.json())
             .then(data => {
+                // If the request was successful then we log the message to the console.
                 if (!data.success) {
                     console.log(data.message);
                 }
+                // Otherwise...
                 else {
+                    // Load all of the test information into a constant for easier use.
                     const { testObjects } = data;
 
+                    // Here we use the .map method to iterate over all of the tests. For each of these
+                    // tests, we create a new instance of the Test class by passing in all of the relevant
+                    // information from the database.
                     const testArray = testObjects.map(testObject => {
                         return new Test(
                             testObject.test_id,
@@ -93,39 +122,50 @@ export default class ProfileCard extends React.Component {
                         );
                     })
 
+                    // Finally we update the state with the new test information, and set the testsFetched
+                    // state to true so that the graph can be displayed. Once the state is finished
+                    // updating we can use the createGraph method, passing in the test array, to make
+                    // the graph.
                     this.setState({ tests: testArray, testsFetched: true }, () => {
                         this.createGraph(testArray);
                     });
-
                 }
             })
-
     }
 
+    // Update methods for the user information.
     updateInputFirstName = event => this.setState({ updatedFirstName: event.target.value, userHasChangedValues: true });
     updateInputLastName = event => this.setState({ updatedLastName: event.target.value, userHasChangedValues: true });
     updateInputIntake = event => this.setState({ updatedIntake: event.target.value, userHasChangedValues: true });
     updateInputIsPrivate = event => this.setState({ updatedIsPrivate: event.target.checked, userHasChangedValues: true });
 
+    // Update methods for the test information
     updateAddTestName = event => this.setState({ addTestName: event.target.value });
     updateAddTestDate = event => this.setState({ addTestDate: event.target.value });
     updateAddTestAttainedScore = event => this.setState({ addTestAttainedScore: event.target.value });
     updateAddTestMaxScore = event => this.setState({ addTestMaxScore: event.target.value });
 
+    // Here we have the method for updating the personal details of the user in the backend. This is
+    // called if the user presses the submit button.
     updateUserPersonalDetails = () => {
+        // First we load the user from the props.
         const { user } = this.props;
 
+        // Now we destructure all of the new information from the state.
         const {
             updatedFirstName,
             updatedLastName,
             updatedIntake,
             updatedIsPrivate
         } = this.state;
-        console.log(updatedIsPrivate)
 
+        // Then we initiate a PUT request to the users endpoint so that we can change the information.
         fetch('http://localhost:3000/users', {
             method: 'put',
+            // Specifying that we are sending the information as JSON in the headers.
             headers: {'Content-Type': 'application/json'},
+            // Passing in all of the new information in the body, including the ID of the user so the
+            // backend knows who to update.
             body: JSON.stringify({
                 userId: user.id,
                 firstName: updatedFirstName,
@@ -134,22 +174,33 @@ export default class ProfileCard extends React.Component {
                 isPrivate: updatedIsPrivate 
             })
         })
+        // Converting the response from JSON to a Javascript object.
         .then(response => response.json())
+        // With this data...
         .then(data => {
+            // If the request was successful then we want to update the state so that the user sees
+            // the success message, and we also want to wipe any previous errors so we set failedToChangeValues
+            // to false.
             if (data.success) {
                 this.setState({ successfullyChangedValues: true, failedToChangeValues: false });
             }
+            // Otherwise, an error occurred so we display the alert to the user.
             else {
                 this.setState({ failedToChangeValues: true })
             }
         })
+        // If there was an error at any point during the promise chain then we want update the state
+        // so that an error message is displayed to the user.
         .catch(err => this.setState({ failedToChangeValues: true }));
     }
 
+    // This is the method which handles adding a test to the database.
     addTest = () => {
 
+        // Getting the user from the props.
         const { user } = this.props;
 
+        // Loading all of the test information from the state.
         const { 
             addTestName,
             addTestDate,
@@ -157,9 +208,12 @@ export default class ProfileCard extends React.Component {
             addTestMaxScore
         } = this.state;
 
+        // To add the test we initiate a POST request to the tests endpoint in the API.
         fetch('http://localhost:3000/tests', {
             method: 'post',
+            // Telling the API that we are sending the information in JSON format.
             headers: {'Content-Type': 'application/json'},
+            // Adding the user ID and the test information in the body of the request.
             body: JSON.stringify({
                 userId: user.id,
                 testName: addTestName,
@@ -168,17 +222,23 @@ export default class ProfileCard extends React.Component {
                 maxScore: addTestMaxScore
             })
         })
+        // Converting the JSON response to Javascript.
         .then(response => response.json())
         .then(data => {
+            // If the request was not successful then we update the state so that an alert appears.
             if (!data.success) {
                 this.setState({
                     failedToAddTest: true
                 }, () => console.log(data.message))
             }
+            // Otherwise, we want to add this new test to the test array so that the graph can reflect
+            // this new information.
             else {
                 this.setState(state => {
 
+                    // First we get the test information back from the database.
                     const testObject = data.testObject[0];
+                    // Then we create a new instance of the Test class with the received information.
                     const newTest = new Test(
                         testObject.test_id,
                         testObject.test_name,
@@ -188,10 +248,15 @@ export default class ProfileCard extends React.Component {
                         testObject.max_score
                     );
 
+                    // Here we create a temporary test array by concatenating the new test onto the
+                    // tests array in the state.
                     const tempTestArray = state.tests.concat([newTest]);
 
+                    // Now we run the createGraph method with this new array so that the graph contains
+                    // the new information.
                     this.createGraph(tempTestArray);
 
+                    // Finally we update the state with the new information.
                     return({
                         tests: tempTestArray,
                         addingTest: false,
@@ -200,21 +265,30 @@ export default class ProfileCard extends React.Component {
                 })
             }
         })
+        // If there was an error at any point then we update the state so that an error alert appears
+        // to the user.
         .catch(err => this.setState({
             failedToAddTest: true
         }, () => console.log(err)));
 
     }
 
+    // This is the method responsible for creating a graph with a given set of tests.
     createGraph = tests => {
         this.setState(state => {
 
+            // First we order the tests by date. To do this we compare the dates using the '-' operator
+            // on the dates, a feature in Javascript which compares the milliseconds elapsed since a
+            // fixed date.
             const orderedTests = tests.sort((test1, test2) => test1.testDate - test2.testDate);
-            console.log(orderedTests)
 
+            // Now we get all the dates so that we can use them as the titles for the tests. Here we
+            // parse them using the getParsedDate method on the Test class to make them easier to read.
             const dates = orderedTests.map(test => test.getParsedDate())
+            // Then we get the percentages using the getRoundedPercentage method on the Test class.
             const percentages = orderedTests.map(test => test.getRoundedPercentage());
 
+            // Finally we update the state with this new graph data.
             return ({
                 graphData: {
                     labels: dates,
@@ -227,13 +301,15 @@ export default class ProfileCard extends React.Component {
                     ]
                 }
             })
-
         })
     }
 
+    // The render method for the Profile Card.
     render() {
 
+        // Getting the user from the props.
         const { user } = this.props;
+        // Grabbing all of the relevant booleans and arrays for rendering the component.
         const {
             userHasChangedValues,
             successfullyChangedValues,
@@ -244,6 +320,7 @@ export default class ProfileCard extends React.Component {
             graphDataReady,
             graphData
         } = this.state;
+        // Getting the current date.
         const currentDate = new Date();
 
         return (
@@ -378,7 +455,5 @@ export default class ProfileCard extends React.Component {
                 </Container>
             </div>
         );
-
     }
-
 }
