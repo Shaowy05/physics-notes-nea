@@ -561,8 +561,22 @@ app.post('/tests', (req, res) => {
         return;
     }
 
+    let intAttainedScore;
+    let intMaxScore
+    try {
+        intAttainedScore = parseInt(attainedScore);
+        intMaxScore = parseInt(maxScore);
+    }
+    catch(err) {
+        res.status(400).json({
+            success: false,
+            message: 'Invalid score sent to API - Is the score an integer value?'
+        });
+        return;
+    }
+
     // Then we check that the attained score is not higher than the max score
-    if (attainedScore > maxScore) {
+    if (intAttainedScore > intMaxScore) {
         res.status(400).json({
             success: false,
             message: 'Attained score higher than the max score'
